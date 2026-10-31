@@ -1,10 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { usersApi } from "../api/endpoints/users";
 
-export function useUsers(options: { withTrashed?: boolean } = {}) {
+export function useUsers(
+  options: { withTrashed?: boolean; retry?: (failureCount: number, error: unknown) => boolean } = {},
+) {
+  const { withTrashed, retry } = options;
   return useQuery({
-    queryKey: ["users", options],
-    queryFn: async () => (await usersApi.list({ withTrashed: options.withTrashed })).data.data,
+    queryKey: ["users", { withTrashed }],
+    queryFn: async () => (await usersApi.list({ withTrashed })).data.data,
+    ...(retry ? { retry } : {}),
   });
 }
 

@@ -4,7 +4,7 @@ import { cn } from "../../lib/utils/utils";
 import { AuditAction, AuditLogEntry } from "../../types/entities";
 import { AuditLogDiff } from "./AuditLogDiff";
 
-const ACTION_LABEL: Record<AuditAction, string> = {
+export const ACTION_LABEL: Record<AuditAction, string> = {
   created: "إنشاء",
   updated: "تعديل",
   deleted: "حذف",
@@ -12,7 +12,7 @@ const ACTION_LABEL: Record<AuditAction, string> = {
   merged: "دمج",
 };
 
-const ACTION_CHIP: Record<AuditAction, string> = {
+export const ACTION_CHIP: Record<AuditAction, string> = {
   created: "bg-app-status-positive/15 text-app-status-positive",
   updated: "bg-app-status-warning/15 text-app-status-warning",
   deleted: "bg-app-status-danger/15 text-app-status-danger",
@@ -57,7 +57,7 @@ export const AuditLogTimeline: React.FC<AuditLogTimelineProps> = ({
         <AuditLogTimelineEntry
           key={entry.id}
           entry={entry}
-          userName={entry.user_id ? userLookup?.[entry.user_id] : undefined}
+          userName={(entry.user_id ? userLookup?.[entry.user_id] : undefined) ?? entry.user?.name}
         />
       ))}
     </ol>

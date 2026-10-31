@@ -162,6 +162,8 @@ export type AuditAction = "created" | "updated" | "deleted" | "restored" | "merg
 export interface AuditLogEntry {
   id: string;
   user_id?: string | null;
+  /** W6-01: the acting user's id and name; null for system rows, absent on older payloads. */
+  user?: { id: string; name: string } | null;
   operating_unit_id?: string | null;
   table_name: string;
   record_id: string;
@@ -213,6 +215,15 @@ export interface AuditLogFilters {
   action?: AuditAction;
   from?: string;
   to?: string;
+}
+
+/** W6-01: the company-wide viewer's filters (GET /audit-logs) on top of action/from/to. */
+export interface AuditLogSearchFilters extends AuditLogFilters {
+  table_name?: string;
+  record_id?: string;
+  operating_unit_id?: string;
+  user_id?: string;
+  search?: string;
 }
 export interface CreateEmployeePayload {
   entity_id?: string;

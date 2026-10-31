@@ -3,9 +3,11 @@ import { Filter, X } from "lucide-react";
 import { cn } from "../../lib/utils/utils";
 import { AuditAction, AuditLogFilters } from "../../types/entities";
 
-interface AuditLogFiltersProps {
-  filters: AuditLogFilters;
-  onChange: (filters: AuditLogFilters) => void;
+interface AuditLogFiltersProps<F extends AuditLogFilters> {
+  filters: F;
+  onChange: (filters: F) => void;
+  /** W6-01: extra filter fields (table, unit, user, search…) shown before the dates. */
+  children?: React.ReactNode;
 }
 
 const ACTION_OPTIONS: Array<{ value: "" | AuditAction; label: string }> = [
@@ -17,13 +19,14 @@ const ACTION_OPTIONS: Array<{ value: "" | AuditAction; label: string }> = [
   { value: "merged", label: "دمج" },
 ];
 
-export const AuditLogFiltersBar: React.FC<AuditLogFiltersProps> = ({
+export function AuditLogFiltersBar<F extends AuditLogFilters = AuditLogFilters>({
   filters,
   onChange,
-}) => {
-  const hasFilter = Boolean(filters.action || filters.from || filters.to);
+  children,
+}: AuditLogFiltersProps<F>) {
+  const hasFilter = Object.values(filters).some((value) => Boolean(value));
 
-  const clear = () => onChange({});
+  const clear = () => onChange({} as F);
 
   return (
     <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-app-separator bg-app-bg-primary p-3">
@@ -31,6 +34,8 @@ export const AuditLogFiltersBar: React.FC<AuditLogFiltersProps> = ({
         <Filter className="h-3.5 w-3.5" />
         تصفية السجل
       </div>
+
+      {children}
 
       <div className="flex flex-col gap-1">
         <label className="text-[10px] text-app-label-secondary">الإجراء</label>
@@ -59,6 +64,7 @@ export const AuditLogFiltersBar: React.FC<AuditLogFiltersProps> = ({
         <input
           type="date"
           value={filters.from ?? ""}
+          max={filters.to}
           onChange={(e) => onChange({ ...filters, from: e.target.value || undefined })}
           className="rounded-lg border border-app-separator bg-app-bg-secondary px-2 py-1.5 text-xs text-app-label-primary focus:outline-none"
         />
@@ -69,6 +75,7 @@ export const AuditLogFiltersBar: React.FC<AuditLogFiltersProps> = ({
         <input
           type="date"
           value={filters.to ?? ""}
+          min={filters.from}
           onChange={(e) => onChange({ ...filters, to: e.target.value || undefined })}
           className="rounded-lg border border-app-separator bg-app-bg-secondary px-2 py-1.5 text-xs text-app-label-primary focus:outline-none"
         />
@@ -86,6 +93,6 @@ export const AuditLogFiltersBar: React.FC<AuditLogFiltersProps> = ({
       )}
     </div>
   );
-};
+}
 
 export default AuditLogFiltersBar;

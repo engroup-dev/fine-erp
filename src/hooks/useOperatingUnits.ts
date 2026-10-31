@@ -1,5 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getAuditLogs } from "../api/endpoints/auditLogs";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  AuditLogSearchQuery,
+  getAuditLogs,
+  getAuditTables,
+  searchAuditLogs,
+} from "../api/endpoints/auditLogs";
 import {
   BlueprintEntry,
   OperatingUnit,
@@ -71,6 +76,37 @@ export function useAuditLog(args: {
         to: args.to,
       }),
     enabled: Boolean(args.recordId),
+  });
+}
+
+/**
+ * Retry network/5xx failures (up to 3 times, like the app default) but not a 4xx: a 403 from
+ * the unit scope or a 422 on the filters is final, and retrying only delays the error panel
+ * while keepPreviousData shows stale rows under the new filters.
+ */
+export const retryUnlessClientError = (failureCount: number, error: unknown): boolean => {
+  const status = (error as { response?: { status?: number } } | undefined)?.response?.status;
+  if (status !== undefined && status >= 400 && status < 500) return false;
+  return failureCount < 3;
+};
+
+/** W6-01: the company-wide audit log viewer — one server page of GET /audit-logs. */
+export function useAuditLogSearch(query: AuditLogSearchQuery) {
+  return useQuery({
+    queryKey: ["auditLog", "search", query],
+    queryFn: () => searchAuditLogs(query),
+    placeholderData: keepPreviousData,
+    retry: retryUnlessClientError,
+  });
+}
+
+/** W6-01: the audited table names for the viewer's table filter. */
+export function useAuditTables() {
+  return useQuery({
+    queryKey: ["auditLog", "tables"],
+    queryFn: getAuditTables,
+    staleTime: 5 * 60 * 1000,
+    retry: retryUnlessClientError,
   });
 }
 

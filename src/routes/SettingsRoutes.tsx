@@ -13,6 +13,7 @@ import CategoryDetailPage from "../pages/inventory/CategoryDetailPage";
 import { BundlesPage } from "../pages/inventory/BundlesPage";
 import BundleFormPage from "../pages/inventory/BundleFormPage";
 import { WarehousesSettingsPage } from "../pages/settings/WarehousesSettingsPage";
+import { AuditLogPage } from "../pages/settings/AuditLogPage";
 import { usePermissions } from "../hooks/usePermissions";
 
 const PRODUCT_TABS = [
@@ -45,6 +46,8 @@ export const SettingsRoutes: React.FC = () => {
     ];
     if (canManageUnits) {
       list.push({ path: "/settings/company/units", label: "الوحدات التشغيلية" });
+      // W6-01: the audit log viewer is owner/admin only (require.role:owner,admin).
+      list.push({ path: "/settings/company/audit", label: "سجل التدقيق" });
     }
     return list;
   }, [canManageUnits]);
@@ -58,6 +61,7 @@ export const SettingsRoutes: React.FC = () => {
         <Route index element={<Navigate to="roles" replace />} />
         <Route path="roles" element={<RolesPage />} />
         {canManageUnits && <Route path="units" element={<OperatingUnitsPage />} />}
+        {canManageUnits && <Route path="audit" element={<AuditLogPage />} />}
       </Route>
 
       {/* 2 — Product settings */}

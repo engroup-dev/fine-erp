@@ -337,6 +337,7 @@ export const getBreadcrumbEntries = (
         pages: {
           roles: "الأدوار والصلاحيات",
           units: "الوحدات التشغيلية",
+          audit: "سجل التدقيق",
         },
       },
       products: {
