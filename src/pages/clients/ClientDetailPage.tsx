@@ -375,6 +375,7 @@ export const ClientDetailPage: React.FC = () => {
         <Field label="الهاتف"><span dir="ltr">{phone || "—"}</span></Field>
         <Field label="المدينة">{entity?.city || "—"}</Field>
         <Field label="العنوان">{entity?.address || "—"}</Field>
+        <Field label="المجموعة">{client.client_group?.name ?? "—"}</Field>
         <Field label="الحساب">
           {client.account ? (
             <span><span className="font-mono">{client.account.account_code}</span> {client.account.name}</span>
