@@ -251,7 +251,7 @@ export const navItems: AppNavItem[] = [
   { id: "settings-products", path: "/settings/products", label: "إعدادات المنتجات", icon: Tags, allowedRoles: SETTINGS_ROLES, permission: "view-inventory" },
   { id: "settings-data", path: "/settings/data", label: "إعدادات البيانات", icon: Database, allowedRoles: ["owner", "admin"] },
   { id: "settings-warehouses", path: "/settings/warehouses", label: "إعدادات المخازن", icon: Warehouse, allowedRoles: SETTINGS_ROLES, permission: "view-inventory" },
-  { id: "settings-printing", path: "/settings/printing", label: "إعدادات الطباعة", icon: Printer, allowedRoles: PRINT_SETTINGS_ROLES },
+  { id: "settings-printing", path: "/settings/printing", label: "إعدادات الجهاز", icon: Printer, allowedRoles: PRINT_SETTINGS_ROLES },
   { id: "settings-client-groups", path: "/settings/client-groups", label: "مجموعات العملاء", icon: UsersRound, allowedRoles: CLIENT_GROUP_ROLES, permission: "view-clients" },
 ];
 
@@ -357,7 +357,7 @@ export const getBreadcrumbEntries = (
         ),
       },
       printing: {
-        label: "إعدادات الطباعة",
+        label: "إعدادات الجهاز",
         pages: {},
       },
       "client-groups": {

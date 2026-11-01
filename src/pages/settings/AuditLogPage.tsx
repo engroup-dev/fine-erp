@@ -383,7 +383,11 @@ export const AuditLogPage: React.FC = () => {
         </button>
       </div>
 
-      <AuditLogFiltersBar filters={filters} onChange={updateFilters}>
+      <AuditLogFiltersBar
+        filters={filters}
+        onChange={updateFilters}
+        hasPendingInput={searchInput.trim() !== "" || recordInput.trim() !== ""}
+      >
         <div className="flex flex-col gap-1">
           <label className="text-[10px] text-app-label-secondary">بحث</label>
           <div className="relative">

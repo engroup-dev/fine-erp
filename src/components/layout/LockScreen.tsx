@@ -5,7 +5,7 @@ import { PasswordInput } from "../ui/PasswordInput";
 import { useLockStore } from "../../stores/lockStore";
 import { useAuthStore } from "../../stores/authStore";
 import { useVerifyPasswordMutation } from "../../hooks/useAuthQuery";
-import { LEDGER_ERROR_MESSAGE, apiErrorPayload } from "../../api/endpoints/production";
+import { apiErrorPayload } from "../../api/endpoints/production";
 import { useUpdateRequiredStore } from "../../stores/updateRequiredStore";
 
 /** Keyboard and pointer events never travel past the lock screen to the app's own listeners. */
@@ -137,9 +137,8 @@ const LockScreenOverlay: React.FC<LockScreenProps> = ({ onSwitchUser, isSwitchin
         } else if (!err.response) {
           setError("تعذّر التحقق من كلمة المرور. تحقق من الاتصال بالخادم ثم أعد المحاولة.");
         } else {
-          // Only codes with an Arabic message; the backend's own message text is English.
-          const known = payload?.code ? LEDGER_ERROR_MESSAGE[payload.code] : undefined;
-          setError(known ?? "تعذّر التحقق من كلمة المرور. أعد المحاولة بعد قليل.");
+          // verify-password has no other coded refusal; the backend's own message text is English.
+          setError("تعذّر التحقق من كلمة المرور. أعد المحاولة بعد قليل.");
         }
       },
     });

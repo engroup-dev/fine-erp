@@ -8,6 +8,8 @@ interface AuditLogFiltersProps<F extends AuditLogFilters> {
   onChange: (filters: F) => void;
   /** W6-01: extra filter fields (table, unit, user, search…) shown before the dates. */
   children?: React.ReactNode;
+  /** Text typed in a child field but not applied yet (debounce, partial id): still worth a clear. */
+  hasPendingInput?: boolean;
 }
 
 const ACTION_OPTIONS: Array<{ value: "" | AuditAction; label: string }> = [
@@ -23,8 +25,9 @@ export function AuditLogFiltersBar<F extends AuditLogFilters = AuditLogFilters>(
   filters,
   onChange,
   children,
+  hasPendingInput = false,
 }: AuditLogFiltersProps<F>) {
-  const hasFilter = Object.values(filters).some((value) => Boolean(value));
+  const hasFilter = hasPendingInput || Object.values(filters).some((value) => Boolean(value));
 
   const clear = () => onChange({} as F);
 

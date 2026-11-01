@@ -169,7 +169,7 @@ export const PrintSettingsPage: React.FC = () => {
       <div>
         <h1 className="text-2xl font-bold text-app-label-primary flex items-center gap-2">
           <Printer className="w-7 h-7 text-app-accent" />
-          إعدادات الطباعة
+          إعدادات الجهاز
         </h1>
         <p className="text-xs text-app-label-secondary mt-1">
           طابعة الإيصالات الحرارية (80 مم) ودرج النقود وقفل الشاشة لهذا الجهاز — تُحفظ على هذا الجهاز فقط.

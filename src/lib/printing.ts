@@ -64,7 +64,7 @@ export const kickDrawer = async (): Promise<PrintOutcome> => {
   const bridge = printingBridge();
   if (!bridge) return drawerFailure(DESKTOP_ONLY);
   const settings = getPrintSettings();
-  if (!isDrawerConfigured(settings)) return drawerFailure("لم يُضبط درج النقود في إعدادات الطباعة");
+  if (!isDrawerConfigured(settings)) return drawerFailure("لم يُضبط درج النقود في إعدادات الجهاز");
   try {
     const result =
       settings.drawerMode === "network"
@@ -107,6 +107,6 @@ export const kickDrawerForSale = async (
   if (!isDesktopPrintingAvailable()) return null;
   drawerKickedSaleIds.add(sale.id);
   // "Open on cash sales" is on but the drawer has no target: say so rather than silently not opening.
-  if (!isDrawerConfigured(settings)) return drawerFailure("لم يُضبط درج النقود في إعدادات الطباعة");
+  if (!isDrawerConfigured(settings)) return drawerFailure("لم يُضبط درج النقود في إعدادات الجهاز");
   return kickDrawer();
 };
