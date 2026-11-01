@@ -14,6 +14,7 @@ import { BundlesPage } from "../pages/inventory/BundlesPage";
 import BundleFormPage from "../pages/inventory/BundleFormPage";
 import { WarehousesSettingsPage } from "../pages/settings/WarehousesSettingsPage";
 import { AuditLogPage } from "../pages/settings/AuditLogPage";
+import { CompanyProfilePage } from "../pages/settings/CompanyProfilePage";
 import { usePermissions } from "../hooks/usePermissions";
 
 const PRODUCT_TABS = [
@@ -45,6 +46,8 @@ export const SettingsRoutes: React.FC = () => {
       { path: "/settings/company/roles", label: "الأدوار والصلاحيات" },
     ];
     if (canManageUnits) {
+      // W6-02: the company profile printed on every document (saved by a company-wide owner/admin).
+      list.push({ path: "/settings/company/profile", label: "بيانات الشركة" });
       list.push({ path: "/settings/company/units", label: "الوحدات التشغيلية" });
       // W6-01: the audit log viewer is owner/admin only (require.role:owner,admin).
       list.push({ path: "/settings/company/audit", label: "سجل التدقيق" });
@@ -60,6 +63,7 @@ export const SettingsRoutes: React.FC = () => {
       <Route path="company" element={<SectionTabsLayout tabs={companyTabs} />}>
         <Route index element={<Navigate to="roles" replace />} />
         <Route path="roles" element={<RolesPage />} />
+        {canManageUnits && <Route path="profile" element={<CompanyProfilePage />} />}
         {canManageUnits && <Route path="units" element={<OperatingUnitsPage />} />}
         {canManageUnits && <Route path="audit" element={<AuditLogPage />} />}
       </Route>

@@ -1112,7 +1112,6 @@ export const BankReconciliationPage: React.FC = () => {
             title="مذكرة التسوية المصرفية"
             number={`REC-${detail.reconciliation.id.slice(0, 8).toUpperCase()}`}
             date={detail.reconciliation.statement_date}
-            issuer="شركة فاين للصناعات والإسفنج"
             meta={[
               { label: "المصرف", value: detail.reconciliation.cash_account.name },
               {

@@ -53,6 +53,7 @@ export const SaleInvoiceDocument: React.FC<{ invoice: Invoice }> = ({ invoice })
       ]}
       signatures={["توقيع البائع", "توقيع العميل"]}
       footerNote="شكراً لتعاملكم معنا — البضاعة المباعة تخضع لسياسة الاستبدال والضمان"
+      showInvoiceTerms
     >
       <PrintTable
         head={
@@ -149,6 +150,7 @@ export const QuotationDocument: React.FC<{ quotation: Quotation }> = ({ quotatio
         { label: "أعدّه", value: quotation.created_by?.name ?? "—" },
       ]}
       footerNote="هذا عرض سعر وليس فاتورة — الأسعار سارية حتى التاريخ المذكور أعلاه"
+      showInvoiceTerms
     >
       <PrintTable
         head={

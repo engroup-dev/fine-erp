@@ -12,6 +12,7 @@ import { usePermissions } from "../../hooks/usePermissions";
 import { useActivePosShift } from "../../hooks/useSales";
 import { toast } from "../../stores/toastStore";
 import { formatDateTime } from "../../lib/utils/format";
+import { ReceiptCompanyHeader } from "../../components/print/ReceiptCompanyHeader";
 
 const inputClass =
   "w-full px-3 py-2 border border-app-separator rounded-lg bg-app-bg-secondary text-xs focus:border-app-accent focus:outline-none disabled:opacity-50";
@@ -83,6 +84,7 @@ export const PrintSettingsPage: React.FC = () => {
   const [isPrinting, setIsPrinting] = useState(false);
   const [isKicking, setIsKicking] = useState(false);
   const [testPrintedAt, setTestPrintedAt] = useState<Date>(() => new Date());
+  // W6-02: the test receipt carries the company name from the profile, like the real receipts.
   /** The port as typed: committed only once it is a valid port, so the field can be cleared and retyped. */
   const [portDraft, setPortDraft] = useState(() => String(settings.drawerPort));
   const isPortDraftValid = parsePort(portDraft) !== null;
@@ -365,7 +367,7 @@ export const PrintSettingsPage: React.FC = () => {
       {/* The test receipt: invisible on screen, the only thing on paper. */}
       <div className="hidden print:block">
         <div className="print-area print-thermal bg-white text-black font-mono text-xs space-y-2 p-2 text-center">
-          <div className="font-sans font-bold text-sm">شركة فاين للصناعات والإسفنج</div>
+          <ReceiptCompanyHeader />
           <div className="font-sans">طباعة تجريبية — إيصال 80 مم</div>
           <div className="border-t border-dashed border-gray-400 pt-2">{formatDateTime(testPrintedAt)}</div>
           <div>{settings.receiptPrinter ?? "نافذة الطباعة العادية"}</div>

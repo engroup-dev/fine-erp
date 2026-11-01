@@ -19,8 +19,9 @@ import {
   DialogFooter,
   DialogClose,
 } from "../ui/Dialog";
+import { PrintDocument, PrintTable, Cell } from "../print/PrintDocument";
 import { usePartnerStatement } from "../../hooks/usePartnerReports";
-import { formatNumber } from "../../lib/utils/format";
+import { formatDate, formatDateTime, formatNumber } from "../../lib/utils/format";
 
 interface PartnerStatementDialogProps {
   open: boolean;
@@ -84,8 +85,18 @@ export const PartnerStatementDialog: React.FC<PartnerStatementDialogProps> = ({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="full" className="max-w-5xl print:max-w-none print:m-0 print:border-none print:shadow-none">
+    // Chromium never splits a position:fixed box across printed pages, and the dialog's
+    // max-height/overflow would clip the statement: on paper nothing above the
+    // .print-area may be fixed or clipped, or a long statement prints only its first page.
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+      className="print:static print:block print:p-0 print:bg-transparent print:backdrop-blur-none"
+    >
+      <DialogContent
+        size="full"
+        className="max-w-5xl print:max-w-none print:m-0 print:max-h-none print:overflow-visible print:border-none print:shadow-none"
+      >
         <DialogHeader className="border-b border-app-separator pb-3">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between w-full">
             <div className="flex items-center gap-2">
@@ -118,7 +129,8 @@ export const PartnerStatementDialog: React.FC<PartnerStatementDialogProps> = ({
               <button
                 type="button"
                 onClick={handlePrint}
-                className="flex items-center gap-1.5 rounded-xl border border-app-separator bg-app-bg-secondary px-3 py-1.5 text-xs font-semibold text-app-label-primary hover:bg-app-fill-f1 transition-colors"
+                disabled={isLoading || !statement}
+                className="disabled:opacity-50 flex items-center gap-1.5 rounded-xl border border-app-separator bg-app-bg-secondary px-3 py-1.5 text-xs font-semibold text-app-label-primary hover:bg-app-fill-f1 transition-colors"
                 title="طباعة كشف الحساب"
               >
                 <Printer className="w-4 h-4 text-app-accent" />
@@ -129,7 +141,7 @@ export const PartnerStatementDialog: React.FC<PartnerStatementDialogProps> = ({
           </div>
         </DialogHeader>
 
-        <DialogBody className="space-y-4 pt-3">
+        <DialogBody className="space-y-4 pt-3 print:overflow-visible">
           {/* Filters Bar */}
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-app-separator bg-app-bg-secondary p-3 print:hidden">
             <div className="flex flex-wrap items-center gap-3 text-xs text-app-label-secondary">
@@ -180,7 +192,7 @@ export const PartnerStatementDialog: React.FC<PartnerStatementDialogProps> = ({
           </div>
 
           {/* Metric Summary Cards */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 print:hidden">
             <div className="rounded-xl border border-app-separator bg-app-bg-primary p-3">
               <span className="text-[11px] font-semibold text-app-label-secondary">الرصيد الافتتاحي</span>
               <p className="mt-1 text-base font-bold font-mono text-app-label-primary">
@@ -228,7 +240,7 @@ export const PartnerStatementDialog: React.FC<PartnerStatementDialogProps> = ({
           </div>
 
           {/* Ledger Table */}
-          <div className="rounded-xl border border-app-separator bg-app-bg-primary shadow-sm overflow-hidden">
+          <div className="rounded-xl border border-app-separator bg-app-bg-primary shadow-sm overflow-hidden print:hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-end text-xs">
                 <thead>
@@ -317,6 +329,67 @@ export const PartnerStatementDialog: React.FC<PartnerStatementDialogProps> = ({
               </table>
             </div>
           </div>
+
+          {/* W6-02: the paper copy — a PrintDocument, so it carries the company profile
+              header (logo, legal name, tax / commercial register, address, phone). */}
+          {statement && (
+            <div className="hidden print:block">
+              <PrintDocument
+                title={`كشف حساب ${isClient ? "عميل" : "مورد"}`}
+                number={statement.party.name}
+                date={new Date().toISOString()}
+                issuer={statement.party.operating_unit_name}
+                meta={[
+                  ...(statement.party.phone
+                    ? [{ label: "الهاتف", value: <span dir="ltr">{statement.party.phone}</span> }]
+                    : []),
+                  {
+                    label: "الفترة",
+                    value: `${from ? formatDate(from) : "بداية الدفاتر"} — ${to ? formatDate(to) : "اليوم"}`,
+                  },
+                  { label: "العملة", value: currency },
+                  { label: "الرصيد الافتتاحي", value: formatNumber(statement.opening_balance) },
+                  { label: "الرصيد الختامي", value: `${formatNumber(closingBal)} — ${balanceBadge}` },
+                ]}
+                signatures={["المحاسب", "المدير المالي"]}
+                footerNote="تم إنشاء هذا الكشف استناداً إلى القيود وسجلات المعاملات التشغيلية المعتمدة."
+              >
+                <PrintTable
+                  head={[
+                    "التاريخ",
+                    "نوع المستند",
+                    "المرجع",
+                    "البيان",
+                    `مدين (${currency})`,
+                    `دائن (${currency})`,
+                    "الرصيد التراكمي",
+                  ]}
+                >
+                  <tr className="font-semibold">
+                    <Cell colSpan={6}>رصيد افتتاحي منقول (سابق لتاريخ البداية)</Cell>
+                    <Cell className="text-end font-mono">{formatNumber(statement.opening_balance)}</Cell>
+                  </tr>
+                  {(statement.transactions ?? []).map((tx, index) => (
+                    <tr key={`${tx.id}-${index}`}>
+                      <Cell className="font-mono">{formatDateTime(tx.date)}</Cell>
+                      <Cell>{tx.document_type_label}</Cell>
+                      <Cell className="font-mono">{tx.document_number}</Cell>
+                      <Cell>{tx.memo || "—"}</Cell>
+                      <Cell className="text-end font-mono">{tx.debit > 0 ? formatNumber(tx.debit) : ""}</Cell>
+                      <Cell className="text-end font-mono">{tx.credit > 0 ? formatNumber(tx.credit) : ""}</Cell>
+                      <Cell className="text-end font-mono">{formatNumber(tx.running_balance)}</Cell>
+                    </tr>
+                  ))}
+                  <tr className="font-bold">
+                    <Cell colSpan={4}>صافي حركة الفترة والرصيد النهائي</Cell>
+                    <Cell className="text-end font-mono">{formatNumber(statement.total_debit)}</Cell>
+                    <Cell className="text-end font-mono">{formatNumber(statement.total_credit)}</Cell>
+                    <Cell className="text-end font-mono">{formatNumber(closingBal)}</Cell>
+                  </tr>
+                </PrintTable>
+              </PrintDocument>
+            </div>
+          )}
         </DialogBody>
 
         <DialogFooter className="border-t border-app-separator pt-3 print:hidden">

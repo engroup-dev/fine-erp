@@ -6,6 +6,7 @@ import { apiErrorPayload } from "../../api/endpoints/production";
 import { toast } from "../../stores/toastStore";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose, DialogBody, DialogFooter } from "../ui/Dialog";
 import { formatNumber } from "../../lib/utils/format";
+import { ReceiptCompanyHeader } from "../print/ReceiptCompanyHeader";
 
 interface PosDailyCloseModalProps {
   isOpen: boolean;
@@ -177,6 +178,12 @@ export const PosDailyCloseModal: React.FC<PosDailyCloseModalProps> = ({
 
         {/* Content Body */}
         <DialogBody className="print-area space-y-5 print:p-0">
+          {/* W6-02: the paper copy carries the company profile header (logo, legal name,
+              tax / commercial register, address, phone); hidden on screen. */}
+          <div className="hidden print:block text-center space-y-1 border-b border-dashed border-gray-300 pb-3 text-black">
+            <ReceiptCompanyHeader />
+            <p className="text-[11px] text-gray-600 font-sans">تقرير إغلاق الصندوق اليومي (Z-Report)</p>
+          </div>
           {isLoading ? (
             <div className="py-12 text-center text-xs text-app-label-secondary">
               جاري تحميل تقرير الصندوق...

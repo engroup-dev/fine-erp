@@ -11,6 +11,7 @@ import { useLogoutMutation } from "../../hooks/useAuthQuery";
 import { useServerConfigStore } from "../../stores/serverConfigStore";
 import { useOperatingUnits } from "../../hooks/usePartners";
 import { useIsCompanyWide } from "../../hooks/useAccounting";
+import { useCompanyProfile } from "../../hooks/useCompanyProfile";
 
 interface AppShellProps {
   children: ReactNode;
@@ -26,6 +27,9 @@ const AppShell = ({ children }: AppShellProps) => {
 
   const { data: operatingUnits } = useOperatingUnits();
   const isCompanyWide = useIsCompanyWide();
+  // W6-02: load the company profile once up front, so the first document or auto-printed
+  // receipt already carries the company header instead of the fallback.
+  useCompanyProfile();
 
   useEffect(() => {
     // Unit-scoped users get auto-pinned to the only unit their role binds them

@@ -336,6 +336,7 @@ export const getBreadcrumbEntries = (
         label: "إعدادات الشركة",
         pages: {
           roles: "الأدوار والصلاحيات",
+          profile: "بيانات الشركة",
           units: "الوحدات التشغيلية",
           audit: "سجل التدقيق",
         },

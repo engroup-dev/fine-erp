@@ -6,6 +6,7 @@ import { formatDateTime, formatInteger, formatNumber } from "../../lib/utils/for
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogBody, DialogFooter } from "../ui/Dialog";
 import { printReceipt } from "../../lib/printing";
 import { toast } from "../../stores/toastStore";
+import { ReceiptCompanyHeader } from "../print/ReceiptCompanyHeader";
 
 interface PosShiftReportModalProps {
   /** The shift to report on; null keeps the modal closed. */
@@ -65,7 +66,7 @@ export const PosShiftReportModal: React.FC<PosShiftReportModalProps> = ({ shiftI
           ) : (
             <div className="print-area print-thermal flex-1 overflow-y-auto p-6 bg-white text-black font-mono text-xs space-y-4 print:p-2 print:m-0 print:overflow-visible">
               <div className="text-center space-y-1 border-b border-dashed border-gray-300 pb-3">
-                <h2 className="text-sm font-bold tracking-wider font-sans">شركة فاين للصناعات والإسفنج</h2>
+                <ReceiptCompanyHeader />
                 <p className="text-[11px] text-gray-600 font-sans">{title}</p>
                 <div className="text-[10px] text-gray-500 pt-1 space-y-0.5">
                   <div>رقم الوردية: <span className="font-bold">{shift.number}</span></div>

@@ -51,7 +51,9 @@ export const OperatingUnitsPage: React.FC = () => {
   const [deleting, setDeleting] = useState<OperatingUnit | null>(null);
   const [restoring, setRestoring] = useState<OperatingUnit | null>(null);
 
-  const listQuery = useOperatingUnits({ withTrashed: tab === "deleted" });
+  // W6-02 follow-up: units now carry deleted_at, so one with_trashed list feeds both tabs
+  // and both counts (the "محذوفة" tab used to show every unit).
+  const listQuery = useOperatingUnits({ withTrashed: true });
   const blueprintsQuery = useUnitBlueprints();
   const usersQuery = useUsers();
   const updateMutation = useUpdateOperatingUnit();
@@ -60,7 +62,10 @@ export const OperatingUnitsPage: React.FC = () => {
 
   const blueprints = blueprintsQuery.data ?? [];
   const users = usersQuery.data ?? [];
-  const units = listQuery.data ?? [];
+  const allUnits = useMemo(() => listQuery.data ?? [], [listQuery.data]);
+  const liveUnits = useMemo(() => allUnits.filter((u) => !u.deleted_at), [allUnits]);
+  const deletedUnits = useMemo(() => allUnits.filter((u) => u.deleted_at), [allUnits]);
+  const units = tab === "deleted" ? deletedUnits : liveUnits;
 
   const userLookup = useMemo(() => {
     const map: Record<string, string> = {};
@@ -180,7 +185,7 @@ export const OperatingUnitsPage: React.FC = () => {
               : "text-app-label-secondary hover:text-app-label-primary",
           )}
         >
-          نشطة ({units.filter((u) => !u.deleted_at).length})
+          نشطة ({liveUnits.length})
         </button>
         <button
           type="button"
@@ -192,7 +197,7 @@ export const OperatingUnitsPage: React.FC = () => {
               : "text-app-label-secondary hover:text-app-label-primary",
           )}
         >
-          محذوفة ({units.filter((u) => u.deleted_at).length})
+          محذوفة ({deletedUnits.length})
         </button>
       </div>
 

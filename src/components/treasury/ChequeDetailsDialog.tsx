@@ -459,7 +459,6 @@ export const ChequeDetailsDialog: React.FC<ChequeDetailsDialogProps> = ({
               title="شيك صادر"
               number={cheque.number}
               date={cheque.issue_date || cheque.created_at}
-              issuer="شركة فاين للصناعات والإسفنج"
               meta={[
                 {
                   label: "المستفيد",
@@ -540,7 +539,6 @@ export const ChequeDetailsDialog: React.FC<ChequeDetailsDialogProps> = ({
               title="إشعار استلام شيك وارد"
               number={cheque.number}
               date={cheque.received_date || cheque.created_at}
-              issuer="شركة فاين للصناعات والإسفنج"
               meta={[
                 { label: "رقم الشيك", value: cheque.cheque_no },
                 { label: "المصرف المسحوب عليه", value: cheque.bank_name },

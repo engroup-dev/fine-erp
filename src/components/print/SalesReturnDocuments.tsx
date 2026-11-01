@@ -10,6 +10,7 @@ import {
 } from "../../api/endpoints/sales";
 import { formatDate, formatNumber } from "../../lib/utils/format";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogBody, DialogFooter } from "../ui/Dialog";
+import { ReceiptCompanyHeader, ReceiptFooter } from "./ReceiptCompanyHeader";
 
 const lineLabel = (line: SalesReturnLine): string =>
   line.order_line?.description ?? line.order_line?.inventory_item?.name ?? "صنف";
@@ -47,7 +48,7 @@ export const SalesReturnReceiptModal: React.FC<SalesReturnReceiptModalProps> = (
         <DialogBody className="p-0">
           <div className="print-area print-thermal flex-1 overflow-y-auto p-6 bg-white text-black font-mono text-xs space-y-4 print:p-2 print:m-0 print:overflow-visible">
             <div className="text-center space-y-1 border-b border-dashed border-gray-300 pb-3">
-              <h2 className="text-sm font-bold tracking-wider font-sans">شركة فاين للصناعات والإسفنج</h2>
+              <ReceiptCompanyHeader />
               <p className="text-[11px] text-gray-600 font-sans">إيصال مرتجع مبيعات</p>
               <div className="text-[10px] text-gray-500 pt-1 space-y-0.5">
                 <div>رقم المرتجع: <span className="font-bold">{salesReturn.number}</span></div>
@@ -93,6 +94,8 @@ export const SalesReturnReceiptModal: React.FC<SalesReturnReceiptModalProps> = (
             {salesReturn.reason?.trim() && (
               <div className="text-[10px] text-gray-600 font-sans">السبب: {salesReturn.reason.trim()}</div>
             )}
+
+            <ReceiptFooter />
           </div>
         </DialogBody>
 

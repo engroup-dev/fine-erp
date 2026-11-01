@@ -295,6 +295,9 @@ export const LEDGER_ERROR_MESSAGE: Record<string, string> = {
   WORK_SHIFT_IN_USE: "هذه الوردية معيّنة لموظفين — انقلهم إلى وردية أخرى أولاً ثم احذفها.",
   EMPLOYEE_HAS_OPEN_ADVANCE: "على الموظف سلفة أو قرض مفتوح — سدّده أو ألغه قبل نقله إلى وحدة تشغيلية أخرى.",
   LOT_STATUS_CHANGE_NOT_ALLOWED: "تتغير حالة اللوت هنا بين «متاح» و«حجر صحي» فقط — الحجز والاستهلاك يتمان من خلال أوامر التقطيع والمبيعات والجرد.",
+  // W6-02: the company profile prints on every unit's documents.
+  COMPANY_PROFILE_FORBIDDEN:
+    "بيانات الشركة تُطبع على مستندات كل الوحدات، فتعديلها من صلاحية المالك أو المدير على مستوى الشركة فقط (لا مدير وحدة واحدة).",
 };
 
 /** The Arabic message for a known refusal code, else the server's message, else the fallback. */

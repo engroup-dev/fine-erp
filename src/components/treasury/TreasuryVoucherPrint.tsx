@@ -40,7 +40,6 @@ export const TreasuryVoucherPrint: React.FC<TreasuryVoucherPrintProps> = ({
         title={docTitle}
         number={voucher.voucher_number}
         date={voucher.voucher_date}
-        issuer="شركة فاين للصناعات والإسفنج"
         meta={[
           { label: "التاريخ", value: voucher.voucher_date },
           { label: "الخزينة", value: voucher.cash_account.name },
