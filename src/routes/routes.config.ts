@@ -339,6 +339,7 @@ export const getBreadcrumbEntries = (
           profile: "بيانات الشركة",
           units: "الوحدات التشغيلية",
           audit: "سجل التدقيق",
+          backups: "النسخ الاحتياطية",
         },
       },
       products: {

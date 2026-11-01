@@ -15,7 +15,9 @@ import BundleFormPage from "../pages/inventory/BundleFormPage";
 import { WarehousesSettingsPage } from "../pages/settings/WarehousesSettingsPage";
 import { AuditLogPage } from "../pages/settings/AuditLogPage";
 import { CompanyProfilePage } from "../pages/settings/CompanyProfilePage";
+import { BackupsPage } from "../pages/settings/BackupsPage";
 import { usePermissions } from "../hooks/usePermissions";
+import { useIsCompanyWideOwner } from "../hooks/useBackups";
 
 const PRODUCT_TABS = [
   { path: "/settings/products/items", label: "الأصناف" },
@@ -40,6 +42,8 @@ const WAREHOUSE_TABS = [
 export const SettingsRoutes: React.FC = () => {
   const { hasRole } = usePermissions();
   const canManageUnits = hasRole(["owner", "admin"]);
+  // W6-03: backups hold every unit's records — the company-wide owner only (BACKUP_FORBIDDEN otherwise).
+  const canManageBackups = useIsCompanyWideOwner();
 
   const companyTabs = useMemo(() => {
     const list = [
@@ -52,8 +56,11 @@ export const SettingsRoutes: React.FC = () => {
       // W6-01: the audit log viewer is owner/admin only (require.role:owner,admin).
       list.push({ path: "/settings/company/audit", label: "سجل التدقيق" });
     }
+    if (canManageBackups) {
+      list.push({ path: "/settings/company/backups", label: "النسخ الاحتياطية" });
+    }
     return list;
-  }, [canManageUnits]);
+  }, [canManageUnits, canManageBackups]);
 
   return (
     <Routes>
@@ -66,6 +73,7 @@ export const SettingsRoutes: React.FC = () => {
         {canManageUnits && <Route path="profile" element={<CompanyProfilePage />} />}
         {canManageUnits && <Route path="units" element={<OperatingUnitsPage />} />}
         {canManageUnits && <Route path="audit" element={<AuditLogPage />} />}
+        {canManageBackups && <Route path="backups" element={<BackupsPage />} />}
       </Route>
 
       {/* 2 — Product settings */}

@@ -298,6 +298,23 @@ export const LEDGER_ERROR_MESSAGE: Record<string, string> = {
   // W6-02: the company profile prints on every unit's documents.
   COMPANY_PROFILE_FORBIDDEN:
     "بيانات الشركة تُطبع على مستندات كل الوحدات، فتعديلها من صلاحية المالك أو المدير على مستوى الشركة فقط (لا مدير وحدة واحدة).",
+  // W6-03: database backups (company-wide owner only).
+  BACKUP_FORBIDDEN:
+    "النسخ الاحتياطية تضم سجلات كل الوحدات، فإدارتها من صلاحية المالك على مستوى الشركة فقط.",
+  BACKUP_FAILED: "فشل أخذ النسخة الاحتياطية، وسُجّلت في القائمة كنسخة فاشلة مع سبب الفشل.",
+  BACKUP_IN_PROGRESS: "توجد نسخة احتياطية قيد التنفيذ الآن — انتظر حتى تنتهي ثم أعد المحاولة.",
+  BACKUP_DRIVER_UNSUPPORTED:
+    "نوع قاعدة البيانات على الخادم غير مدعوم للنسخ الاحتياطي (المدعوم: SQLite و PostgreSQL).",
+  BACKUP_FILE_INVALID: "اسم ملف النسخة الاحتياطية غير صالح.",
+  BACKUP_FILE_MISSING: "ملف هذه النسخة الاحتياطية غير موجود على الخادم.",
+  BACKUP_NOT_COMPLETED: "لا تُنزَّل ولا تُختبر إلا نسخة احتياطية مكتملة.",
+  BACKUP_VERIFY_FAILED:
+    "فشل اختبار الاستعادة لهذه النسخة (لا يطابق الملف بصمته، أو تعذّرت استعادته أو فحصه).",
+  BACKUP_VERIFY_IN_PROGRESS: "يجري اختبار استعادة الآن — انتظر حتى ينتهي ثم أعد المحاولة.",
+  BACKUP_VERIFY_NOT_CONFIGURED:
+    "اختبار الاستعادة على PostgreSQL يحتاج قاعدة بيانات تجريبية مخصصة على الخادم (BACKUP_VERIFY_DATABASE) ولم تُضبط بعد.",
+  BACKUP_VERIFY_SCRATCH_IS_SOURCE:
+    "قاعدة بيانات اختبار الاستعادة المضبوطة هي قاعدة البيانات الفعلية نفسها — يجب أن تكون قاعدة تجريبية منفصلة.",
 };
 
 /** The Arabic message for a known refusal code, else the server's message, else the fallback. */

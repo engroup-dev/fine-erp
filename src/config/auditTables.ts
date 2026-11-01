@@ -58,6 +58,7 @@ export const AUDIT_TABLE_LABELS: Record<string, string> = {
   purchase_order_items: "بنود أوامر الشراء",
   fiscal_years: "السنوات المالية",
   fiscal_periods: "الفترات المحاسبية",
+  backups: "النسخ الاحتياطية",
 };
 
 export const auditTableLabel = (table: string): string => AUDIT_TABLE_LABELS[table] ?? table;
