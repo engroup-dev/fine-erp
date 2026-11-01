@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
-import { AlertTriangle, RefreshCw, Server } from "lucide-react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 import { useServerConfigStore } from "../../stores/serverConfigStore";
 import apiClient from "../../api/client";
+import { useLockStore } from "../../stores/lockStore";
 
 export const ServerConnectionBanner: React.FC = () => {
   const {
@@ -11,6 +12,8 @@ export const ServerConnectionBanner: React.FC = () => {
     setServerConnected,
     setReconnecting,
   } = useServerConfigStore();
+  // W6-05: no background requests behind the lock screen; the poll resumes on unlock.
+  const locked = useLockStore((state) => state.locked);
 
   const handleRetry = async () => {
     setReconnecting(true);
@@ -26,7 +29,7 @@ export const ServerConnectionBanner: React.FC = () => {
   };
 
   useEffect(() => {
-    if (isServerConnected) return;
+    if (isServerConnected || locked) return;
 
     // Periodically check server connectivity every 10 seconds if disconnected
     const interval = setInterval(() => {
@@ -34,7 +37,7 @@ export const ServerConnectionBanner: React.FC = () => {
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [isServerConnected]);
+  }, [isServerConnected, locked]);
 
   if (isServerConnected) {
     return null;

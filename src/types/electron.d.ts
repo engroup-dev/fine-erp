@@ -35,6 +35,10 @@ declare global {
   interface Window {
     electronAPI?: {
       getAppVersion: () => Promise<string>;
+      /** W6-05: called when the OS locks the screen or suspends; returns the unsubscribe. */
+      onLockScreen: (callback: () => void) => () => void;
+      /** W6-05: true once if the OS locked or suspended since the last call (also when no window was listening). */
+      takePendingLock: () => Promise<boolean>;
       printing: {
         listPrinters: () => Promise<ElectronPrinterInfo[]>;
         printSilent: (opts: ElectronPrintSilentOptions) => Promise<ElectronPrintingResult>;

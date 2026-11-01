@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Archive, Info, Printer, RefreshCw } from "lucide-react";
+import { Archive, Info, Lock, Printer, RefreshCw } from "lucide-react";
 import { DrawerMode, isDrawerConfigured, usePrintSettingsStore } from "../../stores/printSettingsStore";
 import {
   canOpenCashDrawer,
@@ -13,6 +13,7 @@ import { useActivePosShift } from "../../hooks/useSales";
 import { toast } from "../../stores/toastStore";
 import { formatDateTime } from "../../lib/utils/format";
 import { ReceiptCompanyHeader } from "../../components/print/ReceiptCompanyHeader";
+import { MAX_IDLE_LOCK_MINUTES, useLockStore } from "../../stores/lockStore";
 
 const inputClass =
   "w-full px-3 py-2 border border-app-separator rounded-lg bg-app-bg-secondary text-xs focus:border-app-accent focus:outline-none disabled:opacity-50";
@@ -61,7 +62,15 @@ const parsePort = (value: string): number | null => {
   return port >= 1 && port <= 65535 ? port : null;
 };
 
-/** Per-workstation receipt printer and cash drawer setup (stored on this machine only). */
+/** Idle minutes typed as text: a whole number 0–MAX_IDLE_LOCK_MINUTES; null for anything else. */
+const parseIdleMinutes = (value: string): number | null => {
+  const trimmed = value.trim();
+  if (!/^\d{1,3}$/.test(trimmed)) return null;
+  const minutes = Number(trimmed);
+  return minutes <= MAX_IDLE_LOCK_MINUTES ? minutes : null;
+};
+
+/** Per-workstation receipt printer, cash drawer and idle-lock setup (stored on this machine only). */
 export const PrintSettingsPage: React.FC = () => {
   const settings = usePrintSettingsStore();
   const { updateSettings } = settings;
@@ -88,6 +97,19 @@ export const PrintSettingsPage: React.FC = () => {
   /** The port as typed: committed only once it is a valid port, so the field can be cleared and retyped. */
   const [portDraft, setPortDraft] = useState(() => String(settings.drawerPort));
   const isPortDraftValid = parsePort(portDraft) !== null;
+  // W6-05: idle auto-lock minutes for this workstation (0 = off).
+  const idleMinutes = useLockStore((state) => state.idleMinutes);
+  // Only the owner or an admin changes the lock on a workstation, so a cashier cannot switch it off.
+  const canEditIdleLock = hasRole(["owner", "admin"]);
+  const setIdleMinutes = useLockStore((state) => state.setIdleMinutes);
+  const [idleDraft, setIdleDraft] = useState(() => String(idleMinutes));
+  const isIdleDraftValid = parseIdleMinutes(idleDraft) !== null;
+
+  const handleIdleChange = (value: string) => {
+    setIdleDraft(value);
+    const minutes = parseIdleMinutes(value);
+    if (minutes !== null) setIdleMinutes(minutes);
+  };
 
   const handlePortChange = (value: string) => {
     setPortDraft(value);
@@ -150,7 +172,7 @@ export const PrintSettingsPage: React.FC = () => {
           إعدادات الطباعة
         </h1>
         <p className="text-xs text-app-label-secondary mt-1">
-          طابعة الإيصالات الحرارية (80 مم) ودرج النقود لهذا الجهاز — تُحفظ على هذا الجهاز فقط.
+          طابعة الإيصالات الحرارية (80 مم) ودرج النقود وقفل الشاشة لهذا الجهاز — تُحفظ على هذا الجهاز فقط.
         </p>
       </div>
 
@@ -362,6 +384,46 @@ export const PrintSettingsPage: React.FC = () => {
             فتح الدرج تجريبياً
           </button>
         </div>
+      </section>
+
+      {/* W6-05: idle auto-lock */}
+      <section className="rounded-2xl border border-app-separator bg-app-bg-primary p-5 space-y-4">
+        <h2 className="text-sm font-bold text-app-label-primary flex items-center gap-2">
+          <Lock className="h-4 w-4 text-app-accent" />
+          قفل الشاشة التلقائي
+        </h2>
+
+        <div className="max-w-[12rem]">
+          <label htmlFor="idle-lock-minutes" className={labelClass}>
+            القفل بعد عدم النشاط (دقيقة)
+          </label>
+          <input
+            id="idle-lock-minutes"
+            type="number"
+            dir="ltr"
+            min={0}
+            max={MAX_IDLE_LOCK_MINUTES}
+            step={1}
+            value={idleDraft}
+            aria-invalid={!isIdleDraftValid}
+            aria-describedby={isIdleDraftValid ? "idle-lock-hint" : "idle-lock-error"}
+            onChange={(e) => handleIdleChange(e.target.value)}
+            disabled={!canEditIdleLock}
+            className={`${inputClass} font-mono disabled:opacity-60`}
+          />
+          {!isIdleDraftValid && (
+            <p id="idle-lock-error" className="text-[11px] text-app-status-danger mt-1">
+              أدخل عدداً صحيحاً من 0 إلى {MAX_IDLE_LOCK_MINUTES}
+            </p>
+          )}
+        </div>
+        <p id="idle-lock-hint" className="text-[11px] text-app-label-secondary leading-relaxed">
+          {idleMinutes > 0
+            ? `تُقفل الشاشة بعد ${idleMinutes} دقيقة بلا استخدام للفأرة أو لوحة المفاتيح أو اللمس، ويلزم إدخال كلمة المرور للمتابعة.`
+            : "القفل التلقائي متوقف على هذا الجهاز (0 = بدون قفل)."}{" "}
+          تُقفل الشاشة أيضاً عند قفل نظام التشغيل أو دخول الجهاز في وضع السكون.
+          {!canEditIdleLock && " يغيّر هذا الإعداد المالك أو مدير النظام فقط."}
+        </p>
       </section>
 
       {/* The test receipt: invisible on screen, the only thing on paper. */}

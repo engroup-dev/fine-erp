@@ -5,8 +5,10 @@ import {
   fetchMeApi,
   logoutApi,
   changePasswordApi,
+  verifyPasswordApi,
 } from "../api/auth";
 import { useAuthStore } from "../stores/authStore";
+import { useLockStore } from "../stores/lockStore";
 import {
   ApiMessageResponse,
   AuthResponse,
@@ -82,6 +84,8 @@ export const useLogoutMutation = () => {
 
   return useMutation<ApiMessageResponse, AxiosError>({
     mutationFn: () => logoutApi(),
+    // W6-05: queries count as offline while the screen is locked; logging out must still go out and settle.
+    networkMode: "always",
     onSettled: () => {
       logout();
       queryClient.clear();
@@ -102,6 +106,20 @@ export const useChangePasswordMutation = () => {
     onSuccess: (data) => {
       setUser(data.user);
       queryClient.setQueryData(AUTH_QUERY_KEY, data.user);
+    },
+  });
+};
+
+/** W6-05: unlocks the lock screen once the server confirms the signed-in user's password. */
+export const useVerifyPasswordMutation = () => {
+  const unlock = useLockStore((state) => state.unlock);
+
+  return useMutation<ApiMessageResponse, AxiosError<{ message?: string; code?: string; retry_after?: number }>, string>({
+    mutationFn: (password) => verifyPasswordApi(password),
+    // Sent while the screen is locked, when TanStack Query reports itself offline.
+    networkMode: "always",
+    onSuccess: () => {
+      unlock();
     },
   });
 };

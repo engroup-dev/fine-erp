@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, session, nativeImage, ipcMain } from "electron";
+import { app, BrowserWindow, shell, session, nativeImage, ipcMain, powerMonitor } from "electron";
 import path from "node:path";
 import fs from "node:fs";
 import { pathToFileURL } from "node:url";
@@ -45,6 +45,9 @@ const getAppIcon = () => {
 };
 
 let mainWindow: BrowserWindow | null = null;
+
+// W6-05: an OS lock/suspend that no renderer has collected yet (see sendLockScreen).
+let pendingLock = false;
 
 const rendererIndexPath = () => path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`);
 
@@ -169,6 +172,18 @@ app.on("ready", () => {
     callback({ responseHeaders });
   });
   createWindow();
+
+  // W6-05: when the OS locks the screen or the machine suspends, the app locks its own screen too.
+  // The event is also kept as pending until a renderer collects it (app:take-pending-lock), so it
+  // is not lost while no window is open (macOS) or while the renderer is still loading.
+  const sendLockScreen = () => {
+    pendingLock = true;
+    for (const win of BrowserWindow.getAllWindows()) {
+      if (!win.isDestroyed()) win.webContents.send("app:lock-screen");
+    }
+  };
+  powerMonitor.on("lock-screen", sendLockScreen);
+  powerMonitor.on("suspend", sendLockScreen);
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -190,6 +205,13 @@ app.on("activate", () => {
 
 ipcMain.handle("app:get-version", () => {
   return app.getVersion();
+});
+
+ipcMain.handle("app:take-pending-lock", (event): boolean => {
+  if (!isAppUrl(event.senderFrame?.url ?? "")) return false;
+  const pending = pendingLock;
+  pendingLock = false;
+  return pending;
 });
 
 registerPrintingHandlers(isAppUrl);

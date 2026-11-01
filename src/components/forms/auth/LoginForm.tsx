@@ -28,7 +28,13 @@ export const LoginForm: React.FC = () => {
     });
   };
 
+  const loginErrorData = loginMutation.error?.response?.data as
+    | { message?: string; code?: string; retry_after?: number }
+    | undefined;
   const errorMessage =
+    (loginErrorData?.code === "LOGIN_THROTTLED"
+      ? `محاولات دخول فاشلة كثيرة — أعد المحاولة بعد ${loginErrorData.retry_after ?? 60} ثانية.`
+      : null) ||
     loginMutation.error?.response?.data?.message ||
     (loginMutation.isError ? "تعذّر الاتصال بالخادم." : null);
 

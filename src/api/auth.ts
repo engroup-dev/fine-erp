@@ -37,3 +37,14 @@ export const changePasswordApi = async (
   return response.data;
 };
 
+
+/** W6-05: re-checks the signed-in user's password for the lock screen (no new token, no session change). */
+export const verifyPasswordApi = async (
+  password: string,
+): Promise<ApiMessageResponse> => {
+  const response = await apiClient.post<ApiMessageResponse>(
+    "/auth/verify-password",
+    { password },
+  );
+  return response.data;
+};
