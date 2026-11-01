@@ -28,6 +28,7 @@ import {
 } from "../../components/treasury/ChequeActionDialog";
 import { ChequeDetailsDialog } from "../../components/treasury/ChequeDetailsDialog";
 import { useCheques, useChequeSummary } from "../../hooks/useCheques";
+import { getCheques } from "../../api/endpoints/cheques";
 import { useClients } from "../../hooks/useClients";
 import { useSuppliers } from "../../hooks/useProcurement";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -94,7 +95,7 @@ export const ChequesPage: React.FC = () => {
   const { data: suppliers = [] } = useSuppliers();
   const { data: summary } = useChequeSummary(currentDirection);
 
-  const { data: chequesData, isLoading } = useCheques({
+  const chequeFilters = {
     direction: currentDirection,
     status: statusFilter || undefined,
     client_id:
@@ -104,9 +105,8 @@ export const ChequesPage: React.FC = () => {
     due_from: dueFrom || undefined,
     due_to: dueTo || undefined,
     search: search.trim() || undefined,
-    page,
-    per_page: 20,
-  });
+  };
+  const { data: chequesData, isLoading } = useCheques({ ...chequeFilters, page, per_page: 20 });
 
   const cheques = chequesData?.data ?? [];
   const lastPage = chequesData?.meta?.last_page ?? chequesData?.last_page ?? 1;
@@ -563,6 +563,8 @@ export const ChequesPage: React.FC = () => {
 
   const table = useDataTable({
     exportFileName: `cheques-${currentDirection}`,
+    // W6-04: every cheque the direction and filters match, not just this page.
+    fetchAllRowsForExport: async () => (await getCheques({ ...chequeFilters, all: 1 })).data,
     columns,
     data: cheques,
     enableSorting: false,

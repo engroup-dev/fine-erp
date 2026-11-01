@@ -178,6 +178,9 @@ export interface ApiErrorPayload {
   /** W5-07 SUPPLIER_TAX_NUMBER_CONFLICT: the tax number the shared entity keeps. */
   entity_id?: string;
   entity_tax_number?: string | null;
+  /** W6-04 EXPORT_TOO_LARGE: the most rows one export may take, and how many the filters match. */
+  limit?: number;
+  total?: number;
 }
 
 /** Pull the JSON body out of a rejected axios request without reaching for `any`. */

@@ -9,6 +9,7 @@ import { useClientGroups } from "../../hooks/useClientGroups";
 import { usePermissions } from "../../hooks/usePermissions";
 import { navItems } from "../../routes/routes.config";
 import type { ClientGroup } from "../../api/endpoints/clientGroups";
+import { getClients } from "../../api/endpoints/clients";
 import { useEntities, useOperatingUnits } from "../../hooks/usePartners";
 import { useReferenceLookups } from "../../hooks/useReferenceLookups";
 import type { LookupEntry } from "../../config/referenceLookups";
@@ -370,6 +371,10 @@ export const ClientsPage: React.FC = () => {
   );
   const clientsTable = useDataTable({
     exportFileName: "clients",
+    // W6-04: the capped all-rows read, narrowed by the same group filter.
+    fetchAllRowsForExport: () => getClients({ client_group_id: groupFilter || undefined, all: 1 }),
+    // The plain list is uncapped and already holds every client: past the cap, export it.
+    loadedRowsAreComplete: true,
     columns,
     data: tableData,
     enableSorting: true,

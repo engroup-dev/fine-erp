@@ -28,9 +28,10 @@ import {
 } from "../../types/procurement";
 
 // Suppliers API
-export const getSuppliers = async (operating_unit_id?: string): Promise<Supplier[]> => {
+/** W6-04: `all` asks for the CSV export's capped mode (422 EXPORT_TOO_LARGE past the server cap). */
+export const getSuppliers = async (operating_unit_id?: string, all?: boolean): Promise<Supplier[]> => {
   const response = await apiClient.get<{ data: Supplier[] }>("/suppliers", {
-    params: { operating_unit_id },
+    params: { operating_unit_id, all: all ? 1 : undefined },
   });
   return response.data.data;
 };
@@ -101,6 +102,8 @@ export const getPurchaseOrders = async (params?: {
   kind?: PurchaseOrderKind;
   /** Cap response size to keep the renderer responsive. Defaults to 100 on the server. */
   per_page?: number;
+  /** W6-04: every row the filters match, past per_page (CSV export); 422 EXPORT_TOO_LARGE past the server cap. */
+  all?: 1;
 }): Promise<PurchaseOrder[]> => {
   const response = await apiClient.get<{ data: PurchaseOrder[] }>("/purchase-orders", { params });
   return response.data.data;

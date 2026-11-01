@@ -13,6 +13,7 @@ import {
   SortingState,
   PaginationState,
   Table as TanstackTable,
+  createRow,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -35,9 +36,9 @@ import {
 } from "lucide-react";
 import { cn } from "../../lib/utils/utils";
 import { downloadCsv, toCsv } from "../../lib/utils/csv";
-import { localDateIso } from "../../lib/utils/format";
+import { formatInteger, localDateIso } from "../../lib/utils/format";
 import { toast } from "../../stores/toastStore";
-import { apiErrorMessage } from "../../api/endpoints/production";
+import { apiErrorMessage, apiErrorPayload } from "../../api/endpoints/production";
 
 // Lets column defs carry the same per-column display hints the old hand-rolled
 // table took as props (align/className), read back in DataTable.Content.
@@ -142,12 +143,19 @@ export interface UseDataTableOptions<TData> {
   /**
    * The all-pages plug-in point for server-paginated grids. When given, the
    * export button writes what this resolves to instead of the loaded rows.
-   * Set where the endpoint can already return every row (paged lists walked with
-   * fetchAllPages, or an `all=1` endpoint); the other server-paged grids leave it
-   * unset and export the rows on screen until their endpoints accept `all=1`
-   * (W6-04 backend half).
+   * Set where the endpoint can return every row: paged lists walked with
+   * fetchAllPages, or an `all=1` endpoint called with the grid's own filters.
+   * An `all=1` list past the server cap fails with 422 EXPORT_TOO_LARGE, which
+   * the button shows as a "narrow the filters" message. The fetched rows follow
+   * the header sort picked on screen.
    */
   fetchAllRowsForExport?: () => Promise<TData[]>;
+  /**
+   * `data` already holds every row the grid's filters match (an uncapped plain
+   * list), so when fetchAllRowsForExport is refused with EXPORT_TOO_LARGE the
+   * export writes the loaded rows instead of failing.
+   */
+  loadedRowsAreComplete?: boolean;
 }
 
 export interface ServerPagination {
@@ -169,6 +177,7 @@ export interface DataTableInstance<TData> {
   enableExport: boolean;
   exportFileName: string;
   fetchAllRowsForExport?: () => Promise<TData[]>;
+  loadedRowsAreComplete: boolean;
 }
 
 /**
@@ -188,6 +197,7 @@ export function useDataTable<TData>({
   enableExport = true,
   exportFileName = "export",
   fetchAllRowsForExport,
+  loadedRowsAreComplete = false,
 }: UseDataTableOptions<TData>): DataTableInstance<TData> {
   // Server-paged grids hold one page and their endpoints keep a fixed order, so a
   // header sort would reorder that page alone while looking catalogue-wide: off.
@@ -280,6 +290,7 @@ export function useDataTable<TData>({
     enableExport,
     exportFileName,
     fetchAllRowsForExport,
+    loadedRowsAreComplete,
   };
 }
 
@@ -439,6 +450,75 @@ function DataTableRoot<TData>({
   );
 }
 
+function isExportTooLarge(err: unknown): boolean {
+  return apiErrorPayload(err)?.code === "EXPORT_TOO_LARGE";
+}
+
+/**
+ * Why an export failed, in Arabic. An all-rows export past the server cap asks
+ * for narrower filters without naming any (grids differ in which they have),
+ * and points at the search box where typing switches to the visible rows.
+ */
+function exportErrorMessage(err: unknown, hasSearchBox: boolean): string {
+  const payload = apiErrorPayload(err);
+  if (payload?.code === "EXPORT_TOO_LARGE") {
+    const counts =
+      payload.total != null && payload.limit != null
+        ? ` (تطابق الفلاتر ${formatInteger(payload.total)} صفاً والحد ${formatInteger(payload.limit)})`
+        : "";
+    const way = hasSearchBox
+      ? "ضيّق الفلاتر المتاحة في الصفحة ثم أعد التصدير، أو اكتب في مربع البحث لتصدير الصفوف الظاهرة فقط."
+      : "ضيّق الفلاتر المتاحة في الصفحة ثم أعد التصدير.";
+    return `عدد الصفوف المطابقة أكبر من أن يُصدَّر دفعة واحدة${counts}. ${way}`;
+  }
+  return apiErrorMessage(err, "تعذر تصدير البيانات.");
+}
+
+/**
+ * Rows fetched for export, in the order the table's header sort shows: the same
+ * steps as TanStack's getSortedRowModel (sortUndefined, desc, invertSorting,
+ * stable by original index), run over throwaway rows of the fetched data.
+ */
+function sortLikeTable<TData>(table: TanstackTable<TData>, data: TData[]): TData[] {
+  const info = (table.getState().sorting ?? []).flatMap((s) => {
+    const column = table.getColumn(s.id);
+    if (!column?.getCanSort()) return [];
+    return [
+      {
+        id: s.id,
+        desc: s.desc ?? false,
+        sortUndefined: column.columnDef.sortUndefined,
+        invertSorting: column.columnDef.invertSorting,
+        sortingFn: column.getSortingFn(),
+      },
+    ];
+  });
+  if (info.length === 0) return data;
+  const rows = data.map((d, i) => createRow(table, String(i), d, i, 0));
+  rows.sort((a, b) => {
+    for (const s of info) {
+      let n = 0;
+      if (s.sortUndefined) {
+        const aUndefined = a.getValue(s.id) === undefined;
+        const bUndefined = b.getValue(s.id) === undefined;
+        if (aUndefined || bUndefined) {
+          if (s.sortUndefined === "first") return aUndefined ? -1 : 1;
+          if (s.sortUndefined === "last") return aUndefined ? 1 : -1;
+          n = aUndefined && bUndefined ? 0 : aUndefined ? s.sortUndefined : -s.sortUndefined;
+        }
+      }
+      if (n === 0) n = s.sortingFn(a, b, s.id);
+      if (n !== 0) {
+        if (s.desc) n *= -1;
+        if (s.invertSorting) n *= -1;
+        return n;
+      }
+    }
+    return a.index - b.index;
+  });
+  return rows.map((r) => r.original);
+}
+
 /**
  * CSV of what the table shows: filtered + sorted rows (every client page) ×
  * visible columns. Rendered automatically — in the Header when there is one,
@@ -447,8 +527,14 @@ function DataTableRoot<TData>({
 const DataTableExportButton: React.FC<{ className?: string }> = ({
   className,
 }) => {
-  const { table, enableExport, exportFileName, fetchAllRowsForExport } =
-    useDataTableContext("DataTable export button");
+  const {
+    table,
+    enableExport,
+    exportFileName,
+    enableGlobalFilter,
+    fetchAllRowsForExport,
+    loadedRowsAreComplete,
+  } = useDataTableContext("DataTable export button");
   const [busy, setBusy] = useState(false);
   if (!enableExport) return null;
 
@@ -462,15 +548,25 @@ const DataTableExportButton: React.FC<{ className?: string }> = ({
   const onExport = async () => {
     setBusy(true);
     try {
-      const rows = fetchAll
-        ? await fetchAll()
-        : loadedRows.map((r) => r.original);
+      const loaded = () => loadedRows.map((r) => r.original);
+      let rows: unknown[];
+      if (!fetchAll) {
+        rows = loaded();
+      } else {
+        try {
+          rows = sortLikeTable(table, await fetchAll());
+        } catch (err) {
+          // An uncapped list already on screen is the complete set: write it.
+          if (!(loadedRowsAreComplete && isExportTooLarge(err))) throw err;
+          rows = loaded();
+        }
+      }
       downloadCsv(
         `${exportFileName}-${localDateIso()}.csv`,
         dataTableToCsv(table, rows),
       );
     } catch (err) {
-      toast.error(apiErrorMessage(err, "تعذر تصدير البيانات."));
+      toast.error(exportErrorMessage(err, enableGlobalFilter));
     } finally {
       setBusy(false);
     }

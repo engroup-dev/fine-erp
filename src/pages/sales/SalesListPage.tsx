@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, ShoppingCart } from "lucide-react";
 import { useSales } from "../../hooks/useSales";
-import { Sale, SALE_STATUS_LABEL } from "../../api/endpoints/sales";
+import { Sale, SALE_STATUS_LABEL, salesApi } from "../../api/endpoints/sales";
 import { DataTable, useDataTable } from "../../components/ui/DataTable";
 import { useSalesColumns } from "../../components/table-columns/salesColumns";
 
@@ -15,13 +15,16 @@ export const SalesListPage: React.FC = () => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useSales({ status: status || undefined, search: search || undefined, page, per_page: 20 });
+  const filters = { status: status || undefined, search: search || undefined };
+  const { data, isLoading } = useSales({ ...filters, page, per_page: 20 });
   const sales = data?.data ?? [];
 
   const columns = useSalesColumns({ onOpen: (sale: Sale) => navigate(`/sales/${sale.id}`) });
   const rows = useMemo(() => sales, [sales]);
   const table = useDataTable({
     exportFileName: "sales",
+    // W6-04: every sale the status tab and search match, not just this page.
+    fetchAllRowsForExport: async () => (await salesApi.list({ ...filters, all: 1 })).data.data,
     columns,
     data: rows,
     enableSorting: false,

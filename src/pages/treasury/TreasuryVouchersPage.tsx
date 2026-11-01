@@ -31,9 +31,10 @@ import { useTreasuryOptions } from "../../hooks/useProcurement";
 import { usePermissions } from "../../hooks/usePermissions";
 import { formatNumber } from "../../lib/utils/format";
 import { apiErrorMessage } from "../../api/endpoints/production";
-import type {
-  TreasuryVoucher,
-  TreasuryVoucherKind,
+import {
+  getTreasuryVouchers,
+  type TreasuryVoucher,
+  type TreasuryVoucherKind,
 } from "../../api/endpoints/treasuryVouchers";
 
 const KIND_TABS: { label: string; value: "" | TreasuryVoucherKind }[] = [
@@ -74,16 +75,15 @@ export const TreasuryVouchersPage: React.FC = () => {
 
   const { data: treasuries = [] } = useTreasuryOptions();
 
-  const { data: vouchersData, isLoading } = useTreasuryVouchers({
+  const voucherFilters = {
     kind: kindFilter || undefined,
     status: statusFilter || undefined,
     cash_account_id: cashAccountId || undefined,
     from: from || undefined,
     to: to || undefined,
     search: search.trim() || undefined,
-    page,
-    per_page: 20,
-  });
+  };
+  const { data: vouchersData, isLoading } = useTreasuryVouchers({ ...voucherFilters, page, per_page: 20 });
 
   const cancelMutation = useCancelTreasuryVoucher();
 
@@ -329,6 +329,8 @@ export const TreasuryVouchersPage: React.FC = () => {
 
   const table = useDataTable({
     exportFileName: "treasury-vouchers",
+    // W6-04: every voucher the filters match, not just this page.
+    fetchAllRowsForExport: async () => (await getTreasuryVouchers({ ...voucherFilters, all: 1 })).data,
     columns,
     data: vouchers,
     enableSorting: false,

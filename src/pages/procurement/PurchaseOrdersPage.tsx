@@ -35,6 +35,7 @@ import {
   approvePurchaseOrder,
   receivePurchaseOrder,
   payLocalPurchaseOrder,
+  getPurchaseOrders,
 } from "../../api/endpoints/procurement";
 import {
   usePurchaseOrders,
@@ -560,6 +561,8 @@ export const PurchaseOrdersPage: React.FC = () => {
   const ordersTableData = useMemo(() => deferredOrders, [deferredOrders]);
   const ordersTable = useDataTable({
     exportFileName: "purchase-orders",
+    // W6-04: every order of the market tab, past the 100 the list loads.
+    fetchAllRowsForExport: () => getPurchaseOrders({ kind: market === "all" ? undefined : market, all: 1 }),
     columns: orderColumns,
     data: ordersTableData,
     enableSorting: true,

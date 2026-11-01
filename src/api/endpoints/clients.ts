@@ -7,6 +7,8 @@ export interface GetClientsParams {
   status?: string;
   /** W5-06: only the clients of this group. */
   client_group_id?: string;
+  /** W6-04: every row the filters match as one page (CSV export); 422 EXPORT_TOO_LARGE past the server cap. */
+  all?: 1;
 }
 
 export const getClients = async (params?: GetClientsParams): Promise<Client[]> => {

@@ -10,6 +10,8 @@ export interface GetEmployeesParams {
   status?: string;
   /** W5-02: include deleted employees (an advance they owe stays listed and repayable). */
   with_trashed?: 1;
+  /** W6-04: every row the filters match as one page (CSV export); 422 EXPORT_TOO_LARGE past the server cap. */
+  all?: 1;
 }
 
 export const getEmployees = async (params?: GetEmployeesParams): Promise<Employee[]> => {

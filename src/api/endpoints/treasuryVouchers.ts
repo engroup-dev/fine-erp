@@ -85,6 +85,8 @@ export interface TreasuryVoucherFilters {
   search?: string;
   page?: number;
   per_page?: number;
+  /** W6-04: every row the filters match as one page (CSV export); 422 EXPORT_TOO_LARGE past the server cap. */
+  all?: 1;
 }
 
 export interface CreateTreasuryVoucherPayload {

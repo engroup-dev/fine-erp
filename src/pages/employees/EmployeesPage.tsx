@@ -7,7 +7,7 @@ import { useEmployees, useCreateEmployee } from "../../hooks/useEmployees";
 import { useEntities, useOperatingUnits } from "../../hooks/usePartners";
 import { useWorkShifts } from "../../hooks/useHr";
 import { usePermissions } from "../../hooks/usePermissions";
-import { PAY_ROLES, employeeErrorMessage } from "../../api/endpoints/employees";
+import { PAY_ROLES, employeeErrorMessage, getEmployees } from "../../api/endpoints/employees";
 import type { WorkShift } from "../../api/endpoints/hr";
 import { formatNumber } from "../../lib/utils/format";
 import { useReferenceLookups } from "../../hooks/useReferenceLookups";
@@ -139,6 +139,10 @@ export const EmployeesPage: React.FC = () => {
   const tableData = useMemo(() => employees, [employees]);
   const employeesTable = useDataTable({
     exportFileName: "employees",
+    // W6-04: the capped all-rows read (the list itself sends no filters).
+    fetchAllRowsForExport: () => getEmployees({ all: 1 }),
+    // The plain list is uncapped and already holds every employee: past the cap, export it.
+    loadedRowsAreComplete: true,
     columns,
     data: tableData,
     enableSorting: true,

@@ -8,7 +8,7 @@ import { usePermissions } from "../../hooks/usePermissions";
 import { useIsCompanyWide } from "../../hooks/useAccounting";
 import { useAuthStore } from "../../stores/authStore";
 import { useServerConfigStore } from "../../stores/serverConfigStore";
-import { SUPPLIER_ERROR_MESSAGE, supplierErrorMessage } from "../../api/endpoints/procurement";
+import { SUPPLIER_ERROR_MESSAGE, getSuppliers, supplierErrorMessage } from "../../api/endpoints/procurement";
 import { useReferenceLookups } from "../../hooks/useReferenceLookups";
 import type { LookupEntry } from "../../config/referenceLookups";
 import { toast } from "../../stores/toastStore";
@@ -378,6 +378,10 @@ export const SuppliersPage: React.FC = () => {
   const tableData = useMemo(() => suppliers, [suppliers]);
   const suppliersTable = useDataTable({
     exportFileName: "suppliers",
+    // W6-04: the capped all-rows read (the list itself sends no filters).
+    fetchAllRowsForExport: () => getSuppliers(undefined, true),
+    // The plain list is uncapped and already holds every supplier: past the cap, export it.
+    loadedRowsAreComplete: true,
     columns,
     data: tableData,
     enableSorting: true,

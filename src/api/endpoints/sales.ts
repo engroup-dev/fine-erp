@@ -746,6 +746,8 @@ export interface SaleFilters {
   to?: string;
   page?: number;
   per_page?: number;
+  /** W6-04: every row the filters match as one page (CSV export); 422 EXPORT_TOO_LARGE past the server cap. */
+  all?: 1;
 }
 
 export interface CollectPaymentChequeInput {
@@ -811,7 +813,8 @@ export const bundleFulfillmentApi = {
 };
 
 export const quotationsApi = {
-  list: (params?: { status?: string; client_id?: string; search?: string; page?: number; per_page?: number }) =>
+  /** W6-04: `all: 1` returns every matching row as one page (CSV export); 422 EXPORT_TOO_LARGE past the server cap. */
+  list: (params?: { status?: string; client_id?: string; search?: string; page?: number; per_page?: number; all?: 1 }) =>
     apiClient.get<Paginated<Quotation>>("/quotations", { params }),
   get: (id: string) => apiClient.get<Quotation>(`/quotations/${id}`),
   create: (data: {
