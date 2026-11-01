@@ -42,6 +42,11 @@ apiClient.interceptors.request.use(
     // admin, accounting manager) intentionally leave this unpinned so they
     // can see every unit at once; a pinned id is only sent when the user
     // (or the navbar switcher) has explicitly chosen one.
+    //
+    // A request may name its own unit (W6-06: Settings > Warehouses creates a
+    // warehouse in the unit picked in the form, and the backend takes that
+    // unit from this header only). That per-request header wins, and the
+    // pinned unit in serverConfigStore stays as it is.
     const user = useAuthStore.getState().user as any;
     const operatingUnitId =
       useServerConfigStore.getState().operatingUnitId ||
@@ -49,7 +54,7 @@ apiClient.interceptors.request.use(
       user?.operating_units?.[0]?.id ||
       user?.unit_id;
 
-    if (operatingUnitId && config.headers) {
+    if (operatingUnitId && config.headers && !config.headers.has("X-Operating-Unit-ID")) {
       config.headers["X-Operating-Unit-ID"] = operatingUnitId;
     }
 

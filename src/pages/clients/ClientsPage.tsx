@@ -15,7 +15,7 @@ import { useReferenceLookups } from "../../hooks/useReferenceLookups";
 import type { LookupEntry } from "../../config/referenceLookups";
 import { useServerConfigStore } from "../../stores/serverConfigStore";
 import { toast } from "../../stores/toastStore";
-import { apiErrorPayload } from "../../api/endpoints/production";
+import { LEDGER_ERROR_MESSAGE, apiErrorMessage, apiErrorPayload } from "../../api/endpoints/production";
 import {
   Dialog,
   DialogContent,
@@ -66,6 +66,20 @@ export const ClientsPage: React.FC = () => {
     if (!apiErrorPayload(err)?.errors?.client_group_id) return null;
     queryClient.invalidateQueries({ queryKey: ["clientGroups"] });
     return "المجموعة المختارة لم تعد موجودة — اختر مجموعة أخرى أو أزل المجموعة.";
+  };
+
+  /**
+   * W6-06: one client per receivable account. A cheap hint from the loaded
+   * list (the backend refuses with CLIENT_ACCOUNT_TAKEN either way).
+   */
+  const accountTakenMessage = (accountId: string | null, ignoreClientId?: string): string | null => {
+    if (!accountId) return null;
+    const holder = clients.find((c) => c.account_id === accountId && c.id !== ignoreClientId);
+    if (!holder) return null;
+    const holderName = holder.entity?.name;
+    return holderName
+      ? `${LEDGER_ERROR_MESSAGE.CLIENT_ACCOUNT_TAKEN} (مربوط حالياً بالعميل «${holderName}»)`
+      : LEDGER_ERROR_MESSAGE.CLIENT_ACCOUNT_TAKEN;
   };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -183,6 +197,12 @@ export const ClientsPage: React.FC = () => {
       return;
     }
 
+    const createAccountTaken = coaAction === "link_existing" ? accountTakenMessage(selectedAccountId) : null;
+    if (createAccountTaken) {
+      toast.error(createAccountTaken);
+      return;
+    }
+
     const payload = {
       operating_unit_id: unitId,
       entity_id: entityMode === "existing" ? selectedEntityId : undefined,
@@ -218,12 +238,8 @@ export const ClientsPage: React.FC = () => {
         resetForm();
       },
       onError: (err: unknown) => {
-        const payloadErr = apiErrorPayload(err);
-        const message =
-          clientGroupRefusal(err) ||
-          payloadErr?.message ||
-          (isAxiosError(err) ? err.response?.data?.message : null);
-        toast.error(message || "تعذر إضافة العميل");
+        // W6-06: CLIENT_ACCOUNT_TAKEN maps to Arabic in apiErrorMessage.
+        toast.error(clientGroupRefusal(err) || apiErrorMessage(err, "تعذر إضافة العميل"));
       },
     });
   };
@@ -285,6 +301,13 @@ export const ClientsPage: React.FC = () => {
       return;
     }
 
+    const editAccountTaken =
+      editCoaAction === "link_existing" ? accountTakenMessage(editSelectedAccountId, editingClient.id) : null;
+    if (editAccountTaken) {
+      toast.error(editAccountTaken);
+      return;
+    }
+
     const payload = {
       record_version: editingClient.record_version ?? 1,
       operating_unit_id: editOperatingUnitId || editingClient.operating_unit_id,
@@ -323,12 +346,7 @@ export const ClientsPage: React.FC = () => {
           setEditingClient(null);
         },
         onError: (err: unknown) => {
-          const payloadErr = apiErrorPayload(err);
-          const message =
-            clientGroupRefusal(err) ||
-            payloadErr?.message ||
-            (isAxiosError(err) ? err.response?.data?.message : null);
-          toast.error(message || "تعذر تحديث بيانات العميل");
+          toast.error(clientGroupRefusal(err) || apiErrorMessage(err, "تعذر تحديث بيانات العميل"));
         },
       }
     );

@@ -32,6 +32,7 @@ import {
   type InventoryItemType,
 } from "../../api/endpoints/categories";
 import { toast } from "../../stores/toastStore";
+import { LEDGER_ERROR_MESSAGE, apiErrorPayload } from "../../api/endpoints/production";
 import { formatNumber } from "../../lib/utils/format";
 import { cn } from "../../lib/utils/utils";
 import { tokens } from "../../lib/tokens";
@@ -47,6 +48,10 @@ const UNIT_CHOICES: { value: string; label: string; hint: string }[] = [
 ];
 
 const PACKAGE_PRESETS = ["برميل", "صندوق", "كيس", "رول", "طرد", "منصة"];
+
+/** W6-06: the seeded general category new items start in (code GEN, name «عام»). */
+const GENERAL_CATEGORY_CODE = "GEN";
+const GENERAL_CATEGORY_NAME = "عام";
 
 const InventoryItemFormPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -80,6 +85,12 @@ const InventoryItemFormPage: React.FC = () => {
   const [costManuallyEdited, setCostManuallyEdited] = useState(false);
   const [priceBasis, setPriceBasis] = useState<PriceBasis>("unit");
   const [error, setError] = useState<string | null>(null);
+  // W6-06: a new item starts in «عام» once, so clearing the picker afterwards stays cleared.
+  const [categoryDefaulted, setCategoryDefaulted] = useState(false);
+  // W6-06: an edited item whose stored code does not start with its category's
+  // code (e.g. one the backfill moved into «عام») keeps that code as-is while it
+  // stays in that category; the prefix only applies once another category is picked.
+  const [legacyCodeCategoryId, setLegacyCodeCategoryId] = useState<string | null>(null);
 
   useEffect(() => {
     if (uom === "m3") setShowSize(true);
@@ -89,11 +100,9 @@ const InventoryItemFormPage: React.FC = () => {
     if (!isEdit || !editingItem) return;
     setName(editingItem.name);
     const prefix = editingItem.category?.code ?? "";
-    setCodeSegment(
-      prefix && editingItem.code.startsWith(prefix)
-        ? editingItem.code.slice(prefix.length)
-        : editingItem.code,
-    );
+    const keepsPrefix = Boolean(prefix) && editingItem.code.startsWith(prefix);
+    setCodeSegment(keepsPrefix ? editingItem.code.slice(prefix.length) : editingItem.code);
+    setLegacyCodeCategoryId(prefix && !keepsPrefix ? (editingItem.category_id ?? null) : null);
     setBarcode(editingItem.barcode ?? "");
     setCategoryId(editingItem.category_id ?? "");
     setItemType(editingItem.item_type);
@@ -150,8 +159,25 @@ const InventoryItemFormPage: React.FC = () => {
     }
   }, [isEdit, editingItem]);
 
+  // W6-06: a category is required; a new item defaults to the general one.
+  // Same rule as the backfill migration: the oldest top-level untyped leaf named
+  // «عام» (whatever its code, GEN-2… when GEN was taken), then an untyped
+  // top-level GEN leaf. Both are untyped, so the default never drives item_type.
+  const oldestFirst = (a: { created_at: string }, b: { created_at: string }) =>
+    (a.created_at ?? "").localeCompare(b.created_at ?? "");
+  const untypedTopLevel = leafCategories.filter((c) => !c.parent_id && !c.item_type);
+  const generalCategory =
+    untypedTopLevel.filter((c) => c.name === GENERAL_CATEGORY_NAME).sort(oldestFirst)[0] ??
+    untypedTopLevel.find((c) => c.code === GENERAL_CATEGORY_CODE);
+  useEffect(() => {
+    if (isEdit || categoryDefaulted || !generalCategory) return;
+    setCategoryDefaulted(true);
+    setCategoryId((current) => current || generalCategory.id);
+  }, [isEdit, categoryDefaulted, generalCategory]);
+
   const selectedCategory = categories?.find((c) => c.id === categoryId);
-  const categoryPrefix = selectedCategory?.code ?? "";
+  const keepsLegacyCode = legacyCodeCategoryId !== null && categoryId === legacyCodeCategoryId;
+  const categoryPrefix = keepsLegacyCode ? "" : (selectedCategory?.code ?? "");
   const fullCode = `${categoryPrefix}${codeSegment.trim()}`;
   const typeFromCategory = Boolean(selectedCategory?.item_type);
   const trimmedBarcode = barcode.trim();
@@ -206,12 +232,17 @@ const InventoryItemFormPage: React.FC = () => {
       setError("الباركود يقبل الأحرف والأرقام اللاتينية والرموز فقط.");
       return;
     }
+    if (!categoryId) {
+      setError(LEDGER_ERROR_MESSAGE.ITEM_CATEGORY_REQUIRED);
+      return;
+    }
 
     const payload = {
       name: name.trim(),
-      code: fullCode,
+      // An unchanged code is left out on edit, so saving a price never rewrites it.
+      code: isEdit && editingItem?.code === fullCode ? undefined : fullCode,
       barcode: trimmedBarcode || null,
-      category_id: categoryId || undefined,
+      category_id: categoryId,
       item_type: itemType,
       unit_of_measure: uom,
       primary_uom: isPackaged ? packageName.trim() || null : null,
@@ -239,6 +270,11 @@ const InventoryItemFormPage: React.FC = () => {
       }
       navigate("/settings/products/items");
     } catch (err: unknown) {
+      // W6-06: a missing category comes back coded.
+      if (apiErrorPayload(err)?.code === "ITEM_CATEGORY_REQUIRED") {
+        setError(LEDGER_ERROR_MESSAGE.ITEM_CATEGORY_REQUIRED);
+        return;
+      }
       if (isAxiosError(err)) {
         const errors = err.response?.data?.errors;
         if (errors && typeof errors === "object") {
@@ -380,7 +416,14 @@ const InventoryItemFormPage: React.FC = () => {
         </Field>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="التصنيف" hint="يحدد بداية الرمز ونوع الصنف تلقائياً">
+          <Field
+            label="التصنيف"
+            hint={
+              categoryId
+                ? "يحدد بداية الرمز ونوع الصنف تلقائياً"
+                : "التصنيف إلزامي — اختر تصنيفاً (يمكن اختيار «عام»)."
+            }
+          >
             <SearchableSelect<{ id: string; name: string; code?: string; path?: string }>
               options={leafCategories}
               value={leafCategories.find((c) => c.id === categoryId) ?? selectedCategory ?? null}

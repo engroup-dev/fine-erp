@@ -33,7 +33,7 @@ import {
 } from "../../hooks/useWarehouses";
 import { useUsers } from "../../hooks/useUsers";
 import { toast } from "../../stores/toastStore";
-import { apiErrorPayload } from "../../api/endpoints/production";
+import { LEDGER_ERROR_MESSAGE, apiErrorMessage, apiErrorPayload } from "../../api/endpoints/production";
 import { AuditLogFiltersBar } from "../../components/audit-log/AuditLogFilters";
 import { AuditLogTimeline } from "../../components/audit-log/AuditLogTimeline";
 import { AuditLogFilters } from "../../types/entities";
@@ -385,6 +385,11 @@ export const OperatingUnitDetailPage: React.FC = () => {
                 toast.error("يرجى إدخال اسم المستودع.");
                 return;
               }
+              // W6-06: a top-level name is unique within the unit.
+              if (warehouses.some((w) => !w.parent_id && w.name.trim() === newWarehouseName.trim())) {
+                toast.error(LEDGER_ERROR_MESSAGE.WAREHOUSE_NAME_TAKEN);
+                return;
+              }
               try {
                 await createWarehouseMutation.mutateAsync({
                   name: newWarehouseName.trim(),
@@ -393,7 +398,7 @@ export const OperatingUnitDetailPage: React.FC = () => {
                 toast.success("تمت إضافة المستودع بنجاح.");
                 setAddWarehouseOpen(false);
               } catch (err) {
-                toast.error(apiErrorPayload(err)?.message || "تعذر إضافة المستودع.");
+                toast.error(apiErrorMessage(err, "تعذر إضافة المستودع."));
               }
             }}
           >
@@ -457,6 +462,18 @@ export const OperatingUnitDetailPage: React.FC = () => {
                 toast.error("يرجى إدخال اسم المستودع.");
                 return;
               }
+              // W6-06: unique among the warehouses that share its parent (or the unit's top level).
+              if (
+                warehouses.some(
+                  (w) =>
+                    w.id !== editingWarehouse.id &&
+                    (w.parent_id ?? null) === (editingWarehouse.parent_id ?? null) &&
+                    w.name.trim() === editWarehouseName.trim(),
+                )
+              ) {
+                toast.error(LEDGER_ERROR_MESSAGE.WAREHOUSE_NAME_TAKEN);
+                return;
+              }
               try {
                 await updateWarehouseMutation.mutateAsync({
                   id: editingWarehouse.id,
@@ -466,7 +483,7 @@ export const OperatingUnitDetailPage: React.FC = () => {
                 toast.success("تم تحديث المستودع بنجاح.");
                 setEditingWarehouse(null);
               } catch (err) {
-                toast.error(apiErrorPayload(err)?.message || "تعذر تحديث المستودع.");
+                toast.error(apiErrorMessage(err, "تعذر تحديث المستودع."));
               }
             }}
           >

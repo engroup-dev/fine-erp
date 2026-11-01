@@ -9,7 +9,7 @@ import {
 import { ITEM_TYPE_LABELS, InventoryItemType, ItemCategory } from "../../api/endpoints/categories";
 import { CategoryFormDialog } from "../../components/inventory/CategoryFormDialog";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
-import { apiErrorPayload } from "../../api/endpoints/production";
+import { apiErrorMessage } from "../../api/endpoints/production";
 import { toast } from "../../stores/toastStore";
 
 interface CategoryTreeNode {
@@ -157,14 +157,8 @@ const CategoryDetailPage: React.FC = () => {
       setIsDeleteOpen(false);
       navigate(category.parent_id ? `/settings/products/categories/${category.parent_id}` : "/settings/products/categories");
     } catch (err: unknown) {
-      const payload = apiErrorPayload(err);
-      if (payload?.code === "CATEGORY_HAS_CHILDREN") {
-        toast.error("لا يمكن حذف الفئة لوجود فئات فرعية تابعة لها. احذف الفئات الفرعية أولاً.");
-      } else if (payload?.code === "CATEGORY_HAS_ITEMS") {
-        toast.error("لا يمكن حذف الفئة لوجود أصناف مخزون مرتبطة بها.");
-      } else {
-        toast.error(payload?.message ?? "فشل حذف الفئة");
-      }
+      // CATEGORY_HAS_CHILDREN / CATEGORY_HAS_ITEMS (W6-06) map to Arabic in apiErrorMessage.
+      toast.error(apiErrorMessage(err, "فشل حذف الفئة"));
     }
   };
 

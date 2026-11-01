@@ -131,18 +131,27 @@ export const createOperatingUnitWarehouse = async (
   return response.data;
 };
 
-/** Create a warehouse in the caller's current operating unit context (or an
- * explicit `operating_unit_id` for a company-wide caller with none pinned).
+/** Create a warehouse in the caller's current operating unit context.
+ * W6-06: the backend takes the unit from the X-Operating-Unit-ID header only
+ * (an `operating_unit_id` in the body is refused), so a company-wide caller
+ * with no unit pinned passes `operatingUnitId`, which is sent as that header
+ * on this one request; the pinned unit is left unchanged.
  * Pass `parent_id` to create a sub-warehouse instead — it inherits the
- * parent's operating unit regardless of `operating_unit_id`. */
-export const createWarehouse = async (payload: {
-  name: string;
-  is_internal_unit?: boolean;
-  operating_unit_id?: string;
-  parent_id?: string;
-  location_type?: string;
-}): Promise<Warehouse> => {
-  const response = await apiClient.post<Warehouse>("/warehouses", payload);
+ * parent's operating unit. */
+export const createWarehouse = async (
+  payload: {
+    name: string;
+    is_internal_unit?: boolean;
+    parent_id?: string;
+    location_type?: string;
+  },
+  operatingUnitId?: string,
+): Promise<Warehouse> => {
+  const response = await apiClient.post<Warehouse>(
+    "/warehouses",
+    payload,
+    operatingUnitId ? { headers: { "X-Operating-Unit-ID": operatingUnitId } } : undefined,
+  );
   return response.data;
 };
 

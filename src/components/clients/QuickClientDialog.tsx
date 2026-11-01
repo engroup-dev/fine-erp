@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { UserPlus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose, DialogBody, DialogFooter } from "../ui/Dialog";
 import { useCreateClient } from "../../hooks/useClients";
-import { apiErrorPayload } from "../../api/endpoints/production";
+import { LEDGER_ERROR_MESSAGE, apiErrorPayload } from "../../api/endpoints/production";
 import type { Client, EntityType } from "../../types/entities";
 import { toast } from "../../stores/toastStore";
 
@@ -56,8 +56,10 @@ export const QuickClientDialog: React.FC<QuickClientDialogProps> = ({ open, onCl
         },
         onError: (err) => {
           const payload = apiErrorPayload(err);
+          // W6-06: a coded refusal (e.g. CLIENT_ACCOUNT_TAKEN) in Arabic before the raw field error.
+          const known = payload?.code ? LEDGER_ERROR_MESSAGE[payload.code] : undefined;
           const firstFieldError = payload?.errors ? Object.values(payload.errors)[0]?.[0] : undefined;
-          setError(firstFieldError ?? payload?.message ?? "تعذّر تسجيل العميل.");
+          setError(known ?? firstFieldError ?? payload?.message ?? "تعذّر تسجيل العميل.");
         },
       },
     );

@@ -31,12 +31,18 @@ export function useOperatingUnitWarehouses(unitId?: string) {
   });
 }
 
-/** Create a warehouse in the current operating unit context (Settings > المخازن). */
+/** Create a warehouse in the current operating unit context (Settings > المخازن).
+ * `operatingUnitId` names the unit for this one request (sent as the
+ * X-Operating-Unit-ID header, W6-06) when none is pinned. */
 export function useCreateWarehouse() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: Parameters<typeof createWarehouse>[0]) => createWarehouse(payload),
+    mutationFn: ({
+      operatingUnitId,
+      ...payload
+    }: Parameters<typeof createWarehouse>[0] & { operatingUnitId?: string }) =>
+      createWarehouse(payload, operatingUnitId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["warehouses"] });
       queryClient.invalidateQueries({ queryKey: ["operatingUnits"] });

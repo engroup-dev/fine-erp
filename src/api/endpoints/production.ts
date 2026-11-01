@@ -318,6 +318,15 @@ export const LEDGER_ERROR_MESSAGE: Record<string, string> = {
     "اختبار الاستعادة على PostgreSQL يحتاج قاعدة بيانات تجريبية مخصصة على الخادم (BACKUP_VERIFY_DATABASE) ولم تُضبط بعد.",
   BACKUP_VERIFY_SCRATCH_IS_SOURCE:
     "قاعدة بيانات اختبار الاستعادة المضبوطة هي قاعدة البيانات الفعلية نفسها — يجب أن تكون قاعدة تجريبية منفصلة.",
+  // W6-06: data-integrity refusals (422 in Laravel's {message, code, errors} shape).
+  WAREHOUSE_NAME_TAKEN:
+    "يوجد مخزن بهذا الاسم في المستوى نفسه (في الوحدة التشغيلية نفسها، أو تحت المخزن الرئيسي نفسه) — اختر اسماً آخر.",
+  CLIENT_ACCOUNT_TAKEN:
+    "حساب الذمم المختار مربوط بعميل آخر — لكل عميل حسابه الخاص؛ اختر حساباً آخر أو أنشئ حساباً جديداً.",
+  ITEM_CATEGORY_REQUIRED: "اختر فئة للصنف (يمكن اختيار الفئة «عام»).",
+  CATEGORY_HAS_ITEMS:
+    "لا يمكن حذف الفئة لوجود أصناف مخزون مرتبطة بها — انقل أصنافها إلى فئة أخرى (مثل «عام») ثم احذفها.",
+  CATEGORY_HAS_CHILDREN: "لا يمكن حذف الفئة لوجود فئات فرعية تابعة لها. احذف الفئات الفرعية أولاً.",
 };
 
 /** The Arabic message for a known refusal code, else the server's message, else the fallback. */

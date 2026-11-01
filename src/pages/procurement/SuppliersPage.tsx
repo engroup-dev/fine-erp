@@ -137,6 +137,18 @@ export const SuppliersPage: React.FC = () => {
     submitCreate(false);
   };
 
+  /**
+   * W6-06: one live supplier per payable account. A cheap hint from the
+   * loaded list (the backend refuses with SUPPLIER_ACCOUNT_TAKEN either way).
+   */
+  const accountTakenMessage = (accountId: string | null, ignoreSupplierId?: string): string | null => {
+    if (!accountId) return null;
+    const holder = suppliers.find((s) => s.account_id === accountId && s.id !== ignoreSupplierId);
+    return holder
+      ? `${SUPPLIER_ERROR_MESSAGE.SUPPLIER_ACCOUNT_TAKEN} (مربوط حالياً بالمورد «${holder.name}»)`
+      : null;
+  };
+
   const submitCreate = (force: boolean) => {
     const unitId = selectedUnitId || defaultUnitId;
     if (!name.trim() || !unitId) {
@@ -161,6 +173,12 @@ export const SuppliersPage: React.FC = () => {
 
     if (coaAction === "link_existing" && !selectedAccountId) {
       toast.error("يرجى اختيار الحساب المراد ربطه من دليل الحسابات");
+      return;
+    }
+
+    const createAccountTaken = coaAction === "link_existing" ? accountTakenMessage(selectedAccountId) : null;
+    if (createAccountTaken) {
+      toast.error(createAccountTaken);
       return;
     }
 
@@ -280,6 +298,13 @@ export const SuppliersPage: React.FC = () => {
 
     if (editCoaAction === "link_existing" && !editSelectedAccountId) {
       toast.error("يرجى اختيار الحساب المراد ربطه من دليل الحسابات");
+      return;
+    }
+
+    const editAccountTaken =
+      editCoaAction === "link_existing" ? accountTakenMessage(editSelectedAccountId, editingSupplier.id) : null;
+    if (editAccountTaken) {
+      toast.error(editAccountTaken);
       return;
     }
 

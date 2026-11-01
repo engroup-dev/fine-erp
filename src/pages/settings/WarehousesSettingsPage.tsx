@@ -21,8 +21,23 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../../components/ui/Dialog";
-import { apiErrorPayload } from "../../api/endpoints/production";
+import { apiErrorMessage, apiErrorPayload } from "../../api/endpoints/production";
 import { toast } from "../../stores/toastStore";
+
+/** W6-06: warehouse names are unique among siblings (top-level per unit, sub-warehouses per parent). */
+const TOP_NAME_TAKEN = "يوجد مخزن بهذا الاسم في هذه الوحدة التشغيلية — اختر اسماً آخر.";
+const SUB_NAME_TAKEN = "يوجد موقع فرعي بهذا الاسم تحت هذا المخزن — اختر اسماً آخر.";
+
+const nameTakenAmong = (siblings: Warehouse[] | undefined, name: string, ignoreId?: string) =>
+  (siblings ?? []).some((s) => s.id !== ignoreId && s.name.trim() === name);
+
+/** The Arabic refusal for a warehouse write; WAREHOUSE_NAME_TAKEN says which level clashed. */
+const warehouseErrorMessage = (err: unknown, isSub: boolean, fallback: string): string =>
+  apiErrorPayload(err)?.code === "WAREHOUSE_NAME_TAKEN"
+    ? isSub
+      ? SUB_NAME_TAKEN
+      : TOP_NAME_TAKEN
+    : apiErrorMessage(err, fallback);
 
 /**
  * The real warehouse (+ sub-warehouse) CRUD, unified with what سجل المخزون
@@ -92,16 +107,26 @@ export const WarehousesSettingsPage: React.FC = () => {
       toast.error("يرجى اختيار الوحدة التشغيلية التابع لها هذا المخزن.");
       return;
     }
+    // Without a picker the list is already the target unit's (scoped server-side).
+    const unitSiblings = needsUnitPicker
+      ? warehouseList.filter((w) => w.operating_unit_id === newUnitId)
+      : warehouseList;
+    if (nameTakenAmong(unitSiblings, newName.trim())) {
+      toast.error(TOP_NAME_TAKEN);
+      return;
+    }
     try {
+      // W6-06: the unit travels as the X-Operating-Unit-ID header of this one
+      // request (the backend refuses operating_unit_id in the body).
       await createMutation.mutateAsync({
         name: newName.trim(),
         is_internal_unit: newIsInternal,
-        operating_unit_id: needsUnitPicker ? newUnitId : undefined,
+        operatingUnitId: needsUnitPicker ? newUnitId : undefined,
       });
       toast.success("تمت إضافة المخزن بنجاح.");
       setIsAddOpen(false);
     } catch (err) {
-      toast.error(apiErrorPayload(err)?.message || "تعذر إضافة المخزن.");
+      toast.error(warehouseErrorMessage(err, false, "تعذر إضافة المخزن."));
     }
   };
 
@@ -110,6 +135,10 @@ export const WarehousesSettingsPage: React.FC = () => {
     if (!addingSubTo) return;
     if (!newSubName.trim()) {
       toast.error("يرجى إدخال اسم الموقع الفرعي.");
+      return;
+    }
+    if (nameTakenAmong(addingSubTo.children, newSubName.trim())) {
+      toast.error(SUB_NAME_TAKEN);
       return;
     }
     try {
@@ -121,7 +150,7 @@ export const WarehousesSettingsPage: React.FC = () => {
       toast.success("تمت إضافة الموقع الفرعي بنجاح.");
       setAddingSubTo(null);
     } catch (err) {
-      toast.error(apiErrorPayload(err)?.message || "تعذر إضافة الموقع الفرعي.");
+      toast.error(warehouseErrorMessage(err, true, "تعذر إضافة الموقع الفرعي."));
     }
   };
 
@@ -132,6 +161,13 @@ export const WarehousesSettingsPage: React.FC = () => {
       return;
     }
     const isChild = Boolean(editing.parent_id);
+    const siblings = isChild
+      ? warehouseList.find((w) => w.id === editing.parent_id)?.children
+      : warehouseList.filter((w) => w.operating_unit_id === editing.operating_unit_id);
+    if (nameTakenAmong(siblings, editName.trim(), editing.id)) {
+      toast.error(isChild ? SUB_NAME_TAKEN : TOP_NAME_TAKEN);
+      return;
+    }
     try {
       await updateMutation.mutateAsync({
         id: editing.id,
@@ -141,7 +177,7 @@ export const WarehousesSettingsPage: React.FC = () => {
       toast.success("تم التحديث بنجاح.");
       setEditing(null);
     } catch (err) {
-      toast.error(apiErrorPayload(err)?.message || "تعذر التحديث.");
+      toast.error(warehouseErrorMessage(err, isChild, "تعذر التحديث."));
     }
   };
 

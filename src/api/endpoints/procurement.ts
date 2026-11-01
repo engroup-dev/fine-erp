@@ -68,6 +68,9 @@ export const SUPPLIER_ERROR_MESSAGE: Record<string, string> = {
   SUPPLIER_UNIT_FORBIDDEN: "ليس لديك دور في هذه الوحدة التشغيلية — اختر وحدة تعمل فيها.",
   OPTIMISTIC_LOCK_CONFLICT: "عدّل مستخدم آخر هذا المورد للتو — أعد فتحه وحاول مرة أخرى.",
   ACCESS_DENIED: "لا تملك صلاحية تعديل المشتريات.",
+  // W6-06: one live supplier per payable account.
+  SUPPLIER_ACCOUNT_TAKEN:
+    "الحساب الدائن المختار مربوط بمورد آخر — لكل مورد حسابه الخاص؛ اختر حساباً آخر أو أنشئ حساباً جديداً.",
 };
 
 /** A supplier refusal in Arabic: a known code (with its details), else a missing record, else the first field error, else the server message. */
