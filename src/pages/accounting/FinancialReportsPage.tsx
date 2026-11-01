@@ -110,6 +110,8 @@ export const FinancialReportsPage: React.FC = () => {
   const unitColumns = useUnitProfitabilityColumns();
   const unitsData = useMemo(() => units.data?.rows ?? [], [units.data]);
   const unitsTable = useDataTable({
+    // The page's own CSV button (with totals, matching print) covers this grid.
+    enableExport: false,
     columns: unitColumns,
     data: unitsData,
     enableSorting: true,
@@ -129,6 +131,8 @@ export const FinancialReportsPage: React.FC = () => {
   );
 
   const partnerTable = useDataTable({
+    // The page's own CSV button (with totals, matching print) covers this grid.
+    enableExport: false,
     columns: partnerColumns,
     data: partnerData,
     enableSorting: true,

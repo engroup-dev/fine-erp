@@ -9,6 +9,7 @@ export function useJournalLinesColumns(): ColumnDef<JournalLine, unknown>[] {
       {
         id: "account",
         header: "الحساب",
+        meta: { exportValue: (r) => [r.account?.account_code, r.account?.name].filter(Boolean).join(" ") },
         enableSorting: false,
         cell: ({ row }) => (
           <>
@@ -27,7 +28,7 @@ export function useJournalLinesColumns(): ColumnDef<JournalLine, unknown>[] {
         id: "debit",
         header: "مدين",
         enableSorting: false,
-        meta: { align: "end" },
+        meta: { exportValue: (r) => (Number(r.debit) > 0 ? r.debit : null), align: "end" },
         cell: ({ row }) => {
           const debit = Number(row.original.debit);
           if (debit <= 0) return null;
@@ -48,7 +49,7 @@ export function useJournalLinesColumns(): ColumnDef<JournalLine, unknown>[] {
         id: "credit",
         header: "دائن",
         enableSorting: false,
-        meta: { align: "end" },
+        meta: { exportValue: (r) => (Number(r.credit) > 0 ? r.credit : null), align: "end" },
         cell: ({ row }) => {
           const credit = Number(row.original.credit);
           if (credit <= 0) return null;

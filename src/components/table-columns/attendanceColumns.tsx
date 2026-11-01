@@ -35,6 +35,7 @@ export function useAttendanceColumns({ rowFor, onPatch, rows }: UseAttendanceCol
       {
         id: "status",
         header: "الحالة",
+        meta: { exportValue: (e) => ATTENDANCE_STATUS_LABEL[rowFor(e.id).status] },
         enableSorting: false,
         cell: ({ row }) => {
           const employee = row.original;
@@ -55,6 +56,7 @@ export function useAttendanceColumns({ rowFor, onPatch, rows }: UseAttendanceCol
       {
         id: "hours",
         header: "الساعات",
+        meta: { exportValue: (e) => (isPayableAttendance(rowFor(e.id).status) ? rowFor(e.id).hours : "0") },
         enableSorting: false,
         cell: ({ row }) => {
           const employee = row.original;
@@ -74,6 +76,7 @@ export function useAttendanceColumns({ rowFor, onPatch, rows }: UseAttendanceCol
       {
         id: "overtime",
         header: "إضافي",
+        meta: { exportValue: (e) => (isPayableAttendance(rowFor(e.id).status) ? rowFor(e.id).overtime : "0") },
         enableSorting: false,
         cell: ({ row }) => {
           const employee = row.original;

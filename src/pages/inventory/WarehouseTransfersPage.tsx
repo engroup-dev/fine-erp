@@ -1,23 +1,45 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeftRight, Plus } from "lucide-react";
 import { useWarehouseTransfers } from "../../hooks/useWarehouseTransfers";
 import { DataTable, useDataTable } from "../../components/ui/DataTable";
 import { useWarehouseTransfersColumns } from "../../components/table-columns/warehouseTransfersColumns";
-import type { WarehouseTransfer } from "../../api/endpoints/warehouseTransfers";
+import { warehouseTransfersApi, type WarehouseTransfer } from "../../api/endpoints/warehouseTransfers";
+import { fetchAllPages } from "../../lib/utils/fetchAllPages";
 
 export const WarehouseTransfersPage: React.FC = () => {
   const navigate = useNavigate();
-  const { data, isLoading } = useWarehouseTransfers();
+  // Server paging: the endpoint returns 15 transfers a page by default.
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(15);
+  const { data, isLoading } = useWarehouseTransfers(
+    { page, per_page: perPage },
+    { keepPrevious: true },
+  );
 
   const columns = useWarehouseTransfersColumns();
   const tableData = useMemo(() => data?.data ?? [], [data]);
   const table = useDataTable({
+    exportFileName: "warehouse-transfers",
+    // Every transfer, not just the page on screen.
+    fetchAllRowsForExport: () =>
+      fetchAllPages(async (p, size) =>
+        (await warehouseTransfersApi.list({ page: p, per_page: size })).data,
+      ),
     columns,
     data: tableData,
     enableSorting: true,
-    pageSize: 15,
     getRowId: (t) => t.id,
+    serverPagination: {
+      page,
+      perPage,
+      total: data?.total ?? 0,
+      lastPage: data?.last_page ?? 1,
+      onChange: (p, size) => {
+        setPage(p);
+        setPerPage(size);
+      },
+    },
   });
 
   return (

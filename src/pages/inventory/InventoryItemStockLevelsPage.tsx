@@ -201,6 +201,7 @@ const InventoryItemStockLevelsPage: React.FC = () => {
       {
         id: "warehouse",
         header: "المخزن",
+        meta: { exportValue: (l) => warehouseLabel.get(l.warehouse_id) ?? l.warehouse?.name },
         enableSorting: false,
         cell: ({ row }) => (
           <span className="text-xs font-semibold text-app-label-primary">
@@ -212,14 +213,14 @@ const InventoryItemStockLevelsPage: React.FC = () => {
         id: "min_qty",
         header: "الحد الأدنى",
         enableSorting: false,
-        meta: { className: "font-mono" },
+        meta: { exportValue: (l) => (Number(l.max_qty) > 0 ? l.min_qty : null), className: "font-mono" },
         cell: ({ row }) => (Number(row.original.max_qty) > 0 ? qty(row.original.min_qty) : "—"),
       },
       {
         id: "max_qty",
         header: "الحد الأقصى",
         enableSorting: false,
-        meta: { className: "font-mono" },
+        meta: { exportValue: (l) => (Number(l.max_qty) > 0 ? l.max_qty : null), className: "font-mono" },
         cell: ({ row }) =>
           Number(row.original.max_qty) > 0 ? (
             qty(row.original.max_qty)
@@ -231,14 +232,14 @@ const InventoryItemStockLevelsPage: React.FC = () => {
         id: "reorder_qty",
         header: "كمية إعادة الطلب",
         enableSorting: false,
-        meta: { className: "font-mono" },
+        meta: { exportValue: (l) => l.reorder_qty, className: "font-mono" },
         cell: ({ row }) => qty(row.original.reorder_qty),
       },
       {
         id: "bin_location",
         header: "موقع الرف",
         enableSorting: false,
-        meta: { className: "font-mono" },
+        meta: { exportValue: (l) => l.bin_location, className: "font-mono" },
         cell: ({ row }) => row.original.bin_location ?? "—",
       },
     ];
@@ -248,7 +249,7 @@ const InventoryItemStockLevelsPage: React.FC = () => {
         id: "actions",
         header: "الإجراءات",
         enableSorting: false,
-        meta: { align: "end" },
+        meta: { export: false, align: "end" },
         cell: ({ row }) => {
           const items: RowActionItem[] = [
             { label: "تعديل", icon: Edit, onClick: () => openEdit(row.original) },
@@ -264,6 +265,7 @@ const InventoryItemStockLevelsPage: React.FC = () => {
 
   const tableData = useMemo(() => levels ?? [], [levels]);
   const table = useDataTable({
+    exportFileName: "item-stock-levels",
     columns,
     data: tableData,
     enableSorting: false,

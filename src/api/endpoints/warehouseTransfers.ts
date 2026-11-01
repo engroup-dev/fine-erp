@@ -41,8 +41,8 @@ export interface WarehouseTransferPayload {
 }
 
 export const warehouseTransfersApi = {
-  list: (params?: { status?: string; search?: string; page?: number }) =>
-    apiClient.get<{ data: WarehouseTransfer[]; current_page: number; last_page: number }>(
+  list: (params?: { status?: string; search?: string; page?: number; per_page?: number }) =>
+    apiClient.get<{ data: WarehouseTransfer[]; current_page: number; last_page: number; total: number }>(
       "/warehouse-transfers",
       { params },
     ),

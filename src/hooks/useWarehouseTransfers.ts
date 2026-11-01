@@ -1,13 +1,17 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { warehouseTransfersApi, WarehouseTransferPayload } from "../api/endpoints/warehouseTransfers";
 
-export function useWarehouseTransfers(params?: { status?: string; search?: string; page?: number }) {
+export function useWarehouseTransfers(
+  params?: { status?: string; search?: string; page?: number; per_page?: number },
+  options?: { keepPrevious?: boolean },
+) {
   return useQuery({
     queryKey: ["warehouseTransfers", params],
     queryFn: async () => {
       const res = await warehouseTransfersApi.list(params);
       return res.data;
     },
+    placeholderData: options?.keepPrevious ? keepPreviousData : undefined,
   });
 }
 

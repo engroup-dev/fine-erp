@@ -14,6 +14,7 @@ export const BundleSalesReportPage: React.FC = () => {
 
   const rows = useMemo(() => report.data?.rows ?? [], [report.data]);
   const table = useDataTable({
+    exportFileName: "bundle-sales",
     columns,
     data: rows,
     enableSorting: true,

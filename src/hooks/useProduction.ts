@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import {
   productionApi,
   BlockGroupInput,
@@ -8,13 +8,17 @@ import {
   ProductionBatchStatus,
 } from "../api/endpoints/production";
 
-export function useProductionBatches(params?: { status?: string; page?: number }) {
+export function useProductionBatches(
+  params?: { status?: string; page?: number; per_page?: number },
+  options?: { keepPrevious?: boolean },
+) {
   return useQuery({
     queryKey: ["productionBatches", params],
     queryFn: async () => {
       const res = await productionApi.getBatches(params);
       return res.data;
     },
+    placeholderData: options?.keepPrevious ? keepPreviousData : undefined,
   });
 }
 

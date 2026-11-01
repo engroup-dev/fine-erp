@@ -55,6 +55,7 @@ export function useOperatingUnitsColumns(
       {
         id: "status",
         header: "الحالة",
+        meta: { exportValue: (u) => STATUS_LABEL[u.status ?? ""] ?? u.status },
         accessorFn: (u) => u.status ?? "",
         cell: ({ row }) => {
           const status = row.original.status ?? "";
@@ -141,7 +142,7 @@ export function useOperatingUnitsColumns(
             </div>
           );
         },
-        meta: { className: "w-1" },
+        meta: { export: false, className: "w-1" },
       },
     ],
     [options],

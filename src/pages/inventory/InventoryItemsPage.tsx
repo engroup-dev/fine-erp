@@ -6,19 +6,28 @@ import { Package, Plus, Search, Filter } from "lucide-react";
 import { SearchableSelect } from "../../components/ui/SearchableSelect";
 import { DataTable, useDataTable } from "../../components/ui/DataTable";
 import { useInventoryItemsColumns } from "../../components/table-columns/inventoryItemsColumns";
-import { type InventoryItem } from "../../api/endpoints/inventory";
+import { inventoryApi, type InventoryItem } from "../../api/endpoints/inventory";
+import { fetchAllPages } from "../../lib/utils/fetchAllPages";
 
 export const InventoryItemsPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
+  // Server paging: the endpoint returns 15 rows a page by default.
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(15);
 
-  const { data: itemData, isLoading } = useInventoryItems({
-    search: searchTerm || undefined,
-    item_type: typeFilter || undefined,
-    category_id: categoryFilter || undefined,
-  });
+  const { data: itemData, isLoading } = useInventoryItems(
+    {
+      search: searchTerm || undefined,
+      item_type: typeFilter || undefined,
+      category_id: categoryFilter || undefined,
+      page,
+      per_page: perPage,
+    },
+    { keepPrevious: true },
+  );
 
   const { data: categories } = useItemCategories();
 
@@ -29,12 +38,35 @@ export const InventoryItemsPage: React.FC = () => {
 
   const tableData = useMemo(() => itemData?.data ?? [], [itemData]);
   const itemsTable = useDataTable({
+    exportFileName: "inventory-items",
+    // Every page under the current filters, not just the one on screen.
+    fetchAllRowsForExport: () =>
+      fetchAllPages(async (p, size) =>
+        (
+          await inventoryApi.getItems({
+            search: searchTerm || undefined,
+            item_type: typeFilter || undefined,
+            category_id: categoryFilter || undefined,
+            page: p,
+            per_page: size,
+          })
+        ).data,
+      ),
     columns,
     data: tableData,
     enableSorting: true,
     enableGlobalFilter: false,
-    pageSize: 10,
     getRowId: (item) => item.id,
+    serverPagination: {
+      page,
+      perPage,
+      total: itemData?.total ?? 0,
+      lastPage: itemData?.last_page ?? 1,
+      onChange: (p, size) => {
+        setPage(p);
+        setPerPage(size);
+      },
+    },
   });
 
   return (
@@ -70,7 +102,10 @@ export const InventoryItemsPage: React.FC = () => {
             aria-label="بحث في الأصناف"
             placeholder="بحث برمز الصنف أو الاسم…"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setPage(1);
+            }}
             className="w-full ps-9 pe-4 py-2 border border-app-separator rounded-xl bg-app-bg-secondary text-xs text-app-label-primary placeholder-app-label-tertiary focus:border-app-accent focus:outline-none"
           />
         </div>
@@ -84,7 +119,10 @@ export const InventoryItemsPage: React.FC = () => {
             <SearchableSelect<{ id: string; name: string }>
               options={categories ?? []}
               value={categories?.find((c) => c.id === categoryFilter) ?? null}
-              onChange={(c) => setCategoryFilter(c ? c.id : "")}
+              onChange={(c) => {
+                setCategoryFilter(c ? c.id : "");
+                setPage(1);
+              }}
               getOptionId={(c) => c.id}
               getOptionLabel={(c) => c.name}
               placeholder="كل الفئات"
@@ -97,7 +135,10 @@ export const InventoryItemsPage: React.FC = () => {
           </span>
           <select
             value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
+            onChange={(e) => {
+              setTypeFilter(e.target.value);
+              setPage(1);
+            }}
             className="px-3 py-2 border border-app-separator rounded-xl bg-app-bg-secondary text-xs text-app-label-primary focus:border-app-accent focus:outline-none"
           >
             <option value="">كل أنواع الأصناف</option>

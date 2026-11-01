@@ -147,6 +147,8 @@ const JournalLinesTable: React.FC<{ lines: JournalLine[] }> = ({ lines }) => {
   const columns = useJournalLinesColumns();
 
   const table = useDataTable({
+    // One CSV button per grid: the page's own CSV button exports every line (all=1).
+    enableExport: false,
     columns,
     data: lines,
     enableSorting: false,

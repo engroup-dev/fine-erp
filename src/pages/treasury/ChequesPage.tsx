@@ -183,6 +183,7 @@ export const ChequesPage: React.FC = () => {
       {
         id: "client",
         header: "العميل",
+        meta: { exportValue: (c) => c.client?.name },
         cell: ({ row }) => (
           <span className="text-xs font-semibold text-app-label-primary">
             {row.original.client?.name ?? "—"}
@@ -202,7 +203,7 @@ export const ChequesPage: React.FC = () => {
       {
         id: "amount",
         header: "المبلغ",
-        meta: { align: "end" },
+        meta: { exportAs: [{ header: "المبلغ", value: (c) => Number(c.amount) }, { header: "العملة", value: (c) => c.currency }], align: "end" },
         cell: ({ row }) => (
           <div className="font-mono text-end text-xs font-bold text-app-label-primary whitespace-nowrap">
             {formatNumber(row.original.amount)} {row.original.currency}
@@ -242,6 +243,7 @@ export const ChequesPage: React.FC = () => {
       {
         id: "is_certified",
         header: "مصدق",
+        meta: { exportValue: (c) => (c.is_certified ? "مصدق" : "عادي") },
         cell: ({ row }) =>
           row.original.is_certified ? (
             <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
@@ -254,6 +256,7 @@ export const ChequesPage: React.FC = () => {
       {
         id: "status",
         header: "الحالة",
+        meta: { exportValue: (c) => c.status_label || STATUS_LABELS[c.status] || c.status },
         cell: ({ row }) => {
           const s = row.original.status;
           const label =
@@ -283,7 +286,7 @@ export const ChequesPage: React.FC = () => {
       {
         id: "actions",
         header: "",
-        meta: { align: "end" },
+        meta: { export: false, align: "end" },
         cell: ({ row }) => {
           const c = row.original;
           return (
@@ -404,6 +407,7 @@ export const ChequesPage: React.FC = () => {
       {
         id: "bank_drawn",
         header: "المصرف المسحوب عليه",
+        meta: { exportValue: (c) => c.deposit_cash_account?.name || c.bank_name },
         cell: ({ row }) => (
           <span className="text-xs text-app-label-primary font-medium">
             {row.original.deposit_cash_account?.name ||
@@ -415,6 +419,7 @@ export const ChequesPage: React.FC = () => {
       {
         id: "payee",
         header: "المستفيد",
+        meta: { exportValue: (c) => c.supplier?.name || c.payee_name },
         cell: ({ row }) => (
           <span className="text-xs font-semibold text-app-label-primary">
             {row.original.supplier?.name || row.original.payee_name || "—"}
@@ -424,6 +429,7 @@ export const ChequesPage: React.FC = () => {
       {
         id: "counter_account",
         header: "الحساب المقابل",
+        meta: { exportValue: (c) => (c.counter_account ? `${c.counter_account.code} — ${c.counter_account.name}` : null) },
         cell: ({ row }) => (
           <span className="text-xs text-app-label-secondary font-medium">
             {row.original.counter_account
@@ -435,7 +441,7 @@ export const ChequesPage: React.FC = () => {
       {
         id: "amount",
         header: "المبلغ",
-        meta: { align: "end" },
+        meta: { exportAs: [{ header: "المبلغ", value: (c) => Number(c.amount) }, { header: "العملة", value: (c) => c.currency }], align: "end" },
         cell: ({ row }) => (
           <div className="font-mono text-end text-xs font-bold text-app-label-primary whitespace-nowrap">
             {formatNumber(row.original.amount)} {row.original.currency}
@@ -473,6 +479,7 @@ export const ChequesPage: React.FC = () => {
       {
         id: "status",
         header: "الحالة",
+        meta: { exportValue: (c) => c.status_label || (c.status === "issued" ? "صادر" : c.status === "cleared" ? "محصل" : c.status === "cancelled" ? "ملغى" : c.status) },
         cell: ({ row }) => {
           const s = row.original.status;
           const label =
@@ -505,7 +512,7 @@ export const ChequesPage: React.FC = () => {
       {
         id: "actions",
         header: "",
-        meta: { align: "end" },
+        meta: { export: false, align: "end" },
         cell: ({ row }) => {
           const c = row.original;
           return (
@@ -555,6 +562,7 @@ export const ChequesPage: React.FC = () => {
     currentDirection === "outgoing" ? outgoingColumns : incomingColumns;
 
   const table = useDataTable({
+    exportFileName: `cheques-${currentDirection}`,
     columns,
     data: cheques,
     enableSorting: false,

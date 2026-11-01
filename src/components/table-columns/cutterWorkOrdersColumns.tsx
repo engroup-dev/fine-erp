@@ -23,6 +23,7 @@ export function useCutterWorkOrdersColumns({
       {
         id: "source",
         header: "المصدر",
+        meta: { exportValue: (r) => (r.client_id ? "عميل" : "داخلي") },
         enableSorting: false,
         cell: ({ row }) =>
           row.original.client_id ? (
@@ -39,6 +40,7 @@ export function useCutterWorkOrdersColumns({
       {
         id: "blocks",
         header: "البلوكات",
+        meta: { exportValue: (r) => (r.blocks ?? []).map((b) => b.stock_lot?.lot_number).filter(Boolean).join("، ") },
         enableSorting: false,
         cell: ({ row }) => {
           const blocks = row.original.blocks ?? [];
@@ -74,6 +76,7 @@ export function useCutterWorkOrdersColumns({
       {
         id: "status",
         header: "الحالة",
+        meta: { exportValue: (r) => CUTTER_STATUS_LABEL[r.status] },
         enableSorting: false,
         cell: ({ row }) => (
           <span className="px-2 py-1 text-xs font-semibold rounded-full bg-app-accent-subtle text-app-accent">
@@ -85,7 +88,7 @@ export function useCutterWorkOrdersColumns({
         id: "actions",
         header: "الإجراءات",
         enableSorting: false,
-        meta: { align: "end" },
+        meta: { export: false, align: "end" },
         cell: ({ row }) => (
           <button
             onClick={() => onOpenOrder(row.original)}

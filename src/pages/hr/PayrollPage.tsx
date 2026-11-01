@@ -115,6 +115,7 @@ const PayslipsTable: React.FC<{
   }, [payslips, unitFilter]);
 
   const table = useDataTable({
+    exportFileName: "payslips",
     columns,
     data: filteredData,
     enableSorting: true,

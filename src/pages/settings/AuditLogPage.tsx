@@ -303,6 +303,8 @@ export const AuditLogPage: React.FC = () => {
   );
 
   const table = useDataTable({
+    // One CSV button per grid: the page's own CSV button exports every page of the log.
+    enableExport: false,
     columns,
     data: rows,
     enablePagination: false,

@@ -354,6 +354,7 @@ export const AttendancePage: React.FC = () => {
   const listTableData = useMemo(() => attendanceListData?.data ?? [], [attendanceListData]);
 
   const listTable = useDataTable({
+    exportFileName: "attendance",
     columns: listColumns,
     data: listTableData,
     enableSorting: true,
@@ -371,6 +372,7 @@ export const AttendancePage: React.FC = () => {
   const sheetTableData = useMemo(() => employees ?? [], [employees]);
 
   const sheetTable = useDataTable({
+    exportFileName: "attendance-sheet",
     columns: sheetColumns,
     data: sheetTableData,
     enableSorting: true,

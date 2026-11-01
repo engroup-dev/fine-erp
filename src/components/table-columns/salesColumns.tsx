@@ -35,6 +35,7 @@ export function useSalesColumns({ onOpen }: UseSalesColumnsArgs): ColumnDef<Sale
       {
         id: "buyer",
         header: "المشتري",
+        meta: { exportValue: (o) => (o.buyer_type === "internal_unit" ? o.buyer_unit?.name ?? "وحدة داخلية" : o.buyer_type === "walk_in" ? o.walk_in_name?.trim() || "زبون عام" : o.client?.entity?.name ?? "عميل") },
         enableSorting: false,
         cell: ({ row }) => {
           const o = row.original;
@@ -62,6 +63,7 @@ export function useSalesColumns({ onOpen }: UseSalesColumnsArgs): ColumnDef<Sale
       {
         id: "payment",
         header: "الدفع",
+        meta: { exportValue: (o) => (o.payment_method && o.payment_method in PAYMENT_ICON ? PAYMENT_METHOD_LABEL[o.payment_method as keyof typeof PAYMENT_METHOD_LABEL] ?? o.payment_method : "بالتكلفة") },
         enableSorting: false,
         cell: ({ row }) => {
           const method = row.original.payment_method;
@@ -85,7 +87,7 @@ export function useSalesColumns({ onOpen }: UseSalesColumnsArgs): ColumnDef<Sale
       {
         id: "outstanding",
         header: "المتبقي",
-        meta: { className: "font-mono text-app-label-secondary" },
+        meta: { exportValue: (o) => { const v = Number(o.total_amount) - Number(o.returned_amount || 0) - Number(o.amount_paid); return v > 0.001 ? Math.round(v * 100) / 100 : null; }, className: "font-mono text-app-label-secondary" },
         cell: ({ row }) => {
           // Returns lower what is owed: total − returned − paid, as on the sale page and the backend.
           const outstanding =
@@ -96,12 +98,14 @@ export function useSalesColumns({ onOpen }: UseSalesColumnsArgs): ColumnDef<Sale
       {
         id: "status",
         header: "الحالة",
+        meta: { exportValue: (o) => SALE_STATUS_LABEL[o.status] ?? o.status },
         enableSorting: false,
         cell: ({ row }) => <StatusBadge status={row.original.status} label={SALE_STATUS_LABEL[row.original.status]} />,
       },
       {
         id: "fulfillment",
         header: "التجهيز",
+        meta: { exportValue: (o) => (o.fulfillment_status ? FULFILLMENT_LABEL[o.fulfillment_status] : null) },
         enableSorting: false,
         cell: ({ row }) => {
           const status = row.original.fulfillment_status;
@@ -117,7 +121,7 @@ export function useSalesColumns({ onOpen }: UseSalesColumnsArgs): ColumnDef<Sale
         id: "actions",
         header: "",
         enableSorting: false,
-        meta: { align: "end" },
+        meta: { export: false, align: "end" },
         cell: ({ row }) => (
           <button
             onClick={() => onOpen(row.original)}

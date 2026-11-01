@@ -86,7 +86,7 @@ export function useEmployeeAdvancesColumns({
         id: "outstanding",
         header: "المتبقي",
         accessorFn: (a) => a.outstanding ?? 0,
-        meta: { align: "end", className: "font-mono" },
+        meta: { exportValue: (a) => (a.status === "paid" || a.status === "settled" ? a.outstanding ?? 0 : null), align: "end", className: "font-mono" },
         cell: ({ row }) =>
           row.original.status === "paid" || row.original.status === "settled"
             ? formatAdvanceMoney(row.original.outstanding ?? 0)
@@ -95,11 +95,13 @@ export function useEmployeeAdvancesColumns({
       {
         accessorKey: "status",
         header: "الحالة",
+        meta: { exportValue: (a) => ADVANCE_STATUS_LABEL[a.status] ?? a.status },
         cell: ({ row }) => <AdvanceStatusChip status={row.original.status} />,
       },
       {
         id: "actions",
         header: "",
+        meta: { export: false },
         enableSorting: false,
         cell: ({ row }) => renderActions(row.original),
       },

@@ -21,6 +21,7 @@ export const BundlesPage: React.FC = () => {
 
   const tableData = useMemo(() => bundles ?? [], [bundles]);
   const table = useDataTable({
+    exportFileName: "bundles",
     columns,
     data: tableData,
     enableSorting: true,

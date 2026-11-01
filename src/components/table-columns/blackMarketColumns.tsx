@@ -16,6 +16,7 @@ export function useBlackMarketColumns(): ColumnDef<PaymentRequest, unknown>[] {
       {
         id: "supplier",
         header: "المورد / أمر الشراء",
+        meta: { exportValue: (r) => [r.import_order?.supplier?.name, r.import_order?.order_number].filter(Boolean).join(" — ") },
         enableSorting: false,
         cell: ({ row }) => {
           const supplier = row.original.import_order?.supplier;
@@ -34,6 +35,7 @@ export function useBlackMarketColumns(): ColumnDef<PaymentRequest, unknown>[] {
       {
         id: "route",
         header: "المسار",
+        meta: { exportValue: (r) => (r.route === "bank" ? "اعتماد مصرفي" : "سوق حر") },
         enableSorting: false,
         cell: ({ row }) => (
           <span
@@ -92,7 +94,7 @@ export function useBlackMarketColumns(): ColumnDef<PaymentRequest, unknown>[] {
             </span>
           );
         },
-        meta: { className: "font-mono" },
+        meta: { exportValue: (r) => r.variance_vs_booked_lyd, className: "font-mono" },
       },
       {
         id: "extra_allocation_note",
@@ -103,6 +105,7 @@ export function useBlackMarketColumns(): ColumnDef<PaymentRequest, unknown>[] {
       {
         id: "status",
         header: "الحالة",
+        meta: { exportValue: (r) => (r.status === "paid" ? "مدفوع" : r.status === "rejected" ? "مرفوض" : "معلق") },
         enableSorting: false,
         cell: ({ row }) => (
           <span

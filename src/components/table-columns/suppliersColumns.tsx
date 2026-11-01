@@ -78,6 +78,7 @@ export function useSuppliersColumns({ onEdit, onViewStatement, onMerge }: UseSup
       {
         id: "account",
         header: "حساب الأستاذ (COA)",
+        meta: { exportValue: (s) => (s.account ? `${s.account.account_code} - ${s.account.name}` : null) },
         cell: ({ row }) => {
           const acc = row.original.account;
           if (acc) {
@@ -94,7 +95,7 @@ export function useSuppliersColumns({ onEdit, onViewStatement, onMerge }: UseSup
         id: "actions",
         header: "",
         enableSorting: false,
-        meta: { align: "end" },
+        meta: { export: false, align: "end" },
         cell: ({ row }) => {
           const supplier = row.original;
           return (

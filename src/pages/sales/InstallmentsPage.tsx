@@ -164,6 +164,8 @@ export const InstallmentsPage: React.FC = () => {
   );
 
   const table = useDataTable({
+    // One CSV button per grid: the page's own CSV button exports this report.
+    enableExport: false,
     columns,
     data: rows,
     enableSorting: true,

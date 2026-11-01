@@ -138,6 +138,7 @@ export const EmployeesPage: React.FC = () => {
 
   const tableData = useMemo(() => employees, [employees]);
   const employeesTable = useDataTable({
+    exportFileName: "employees",
     columns,
     data: tableData,
     enableSorting: true,

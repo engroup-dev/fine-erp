@@ -207,6 +207,7 @@ export const BatchMaterialsSection: React.FC<{ batch: ProductionBatch }> = ({ ba
   const onRemove = useCallback((line: ProductionBatchMaterial) => setRemoving(line), []);
   const columns = useBatchMaterialsColumns({ onRemove: isClosed ? undefined : onRemove });
   const table = useDataTable({
+    exportFileName: "batch-materials",
     columns,
     data: materials,
     enableSorting: false,

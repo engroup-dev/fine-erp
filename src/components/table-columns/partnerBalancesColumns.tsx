@@ -178,7 +178,7 @@ export function usePartnerBalancesColumns({
         id: "actions",
         header: "",
         enableSorting: false,
-        meta: { align: "end" },
+        meta: { export: false, align: "end" },
         cell: ({ row }) => (
           <button
             type="button"

@@ -1,10 +1,14 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { cutterApi, CutterRemnantInput, CutterWorkOrderStatus } from "../api/endpoints/cutter";
 
-export function useCutterOrders(params?: { status?: string; internal_only?: boolean; page?: number }) {
+export function useCutterOrders(
+  params?: { status?: string; internal_only?: boolean; page?: number; per_page?: number },
+  options?: { keepPrevious?: boolean },
+) {
   return useQuery({
     queryKey: ["cutterOrders", params],
     queryFn: async () => (await cutterApi.getOrders(params)).data,
+    placeholderData: options?.keepPrevious ? keepPreviousData : undefined,
   });
 }
 

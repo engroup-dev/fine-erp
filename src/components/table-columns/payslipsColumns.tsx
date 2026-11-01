@@ -288,6 +288,7 @@ export function usePayslipsColumns({ run, onError }: UsePayslipsColumnsArgs): Co
       {
         id: "deductions",
         header: "استقطاعات",
+        meta: { exportValue: (p) => (p.deductions ?? []).reduce((sum, d) => sum + Number(d.amount || 0), 0) },
         enableSorting: false,
         cell: ({ row }) => (
           <DeductionEditor payslip={row.original} editable={run.status === "calculated" && !run.needs_recalculation} onError={onError} />

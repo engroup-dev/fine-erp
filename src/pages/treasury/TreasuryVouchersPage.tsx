@@ -135,6 +135,7 @@ export const TreasuryVouchersPage: React.FC = () => {
       {
         id: "kind",
         header: "النوع",
+        meta: { exportValue: (v) => v.kind_label || (v.kind === "receipt" ? "قبض" : "صرف") },
         accessorKey: "kind",
         cell: ({ row }) => {
           const isReceipt = row.original.kind === "receipt";
@@ -164,6 +165,7 @@ export const TreasuryVouchersPage: React.FC = () => {
       {
         id: "cash_account",
         header: "الخزينة",
+        meta: { exportValue: (v) => v.cash_account?.name },
         cell: ({ row }) => (
           <span className="text-xs font-medium text-app-label-primary">
             {row.original.cash_account?.name ?? "—"}
@@ -173,6 +175,7 @@ export const TreasuryVouchersPage: React.FC = () => {
       {
         id: "counter_party",
         header: "الطرف المقابل",
+        meta: { exportValue: (v) => (v.client ? v.client.name : v.counter_account ? [`${v.counter_account.code} — ${v.counter_account.name}`, v.employee ? `الموظف: ${v.employee.name ?? v.employee.employee_number ?? v.employee.id.slice(0, 8)}` : null].filter(Boolean).join(" — ") : null) },
         cell: ({ row }) => {
           const v = row.original;
           if (v.client) {
@@ -225,7 +228,7 @@ export const TreasuryVouchersPage: React.FC = () => {
       {
         id: "amount",
         header: "المبلغ",
-        meta: { align: "end" },
+        meta: { exportAs: [{ header: "المبلغ", value: (v) => Number(v.amount) }, { header: "العملة", value: (v) => v.currency }], align: "end" },
         cell: ({ row }) => {
           const v = row.original;
           const isNonLyd = v.currency !== "LYD" && v.currency !== "د.ل";
@@ -246,6 +249,7 @@ export const TreasuryVouchersPage: React.FC = () => {
       {
         id: "status",
         header: "الحالة",
+        meta: { exportValue: (v) => v.status_label || (v.status === "cancelled" ? "ملغى" : "مرحّل") },
         cell: ({ row }) => {
           const isCancelled = row.original.status === "cancelled";
           return (
@@ -264,6 +268,7 @@ export const TreasuryVouchersPage: React.FC = () => {
       {
         id: "journal_entry",
         header: "القيد",
+        meta: { exportValue: (v) => [v.journal_entry?.reference, v.cancel_entry ? `عكسي: ${v.cancel_entry.reference}` : null].filter(Boolean).join(" — ") },
         cell: ({ row }) => {
           const v = row.original;
           return (
@@ -283,7 +288,7 @@ export const TreasuryVouchersPage: React.FC = () => {
       {
         id: "actions",
         header: "",
-        meta: { align: "end" },
+        meta: { export: false, align: "end" },
         cell: ({ row }) => {
           const v = row.original;
           const isCancelled = v.status === "cancelled";
@@ -323,6 +328,7 @@ export const TreasuryVouchersPage: React.FC = () => {
   );
 
   const table = useDataTable({
+    exportFileName: "treasury-vouchers",
     columns,
     data: vouchers,
     enableSorting: false,

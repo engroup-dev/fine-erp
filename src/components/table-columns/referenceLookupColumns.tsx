@@ -65,6 +65,7 @@ export function useReferenceLookupColumns({
       {
         id: "isActive",
         header: "الحالة",
+        meta: { exportValue: (r) => (r.isActive ? "مفعّل" : "موقوف") },
         enableSorting: false,
         cell: ({ row }) => (
           <button
@@ -84,7 +85,7 @@ export function useReferenceLookupColumns({
         id: "actions",
         header: "إجراء",
         enableSorting: false,
-        meta: { align: "end" },
+        meta: { export: false, align: "end" },
         cell: ({ row }) => (
           <div className="flex items-center justify-end gap-1">
             <button

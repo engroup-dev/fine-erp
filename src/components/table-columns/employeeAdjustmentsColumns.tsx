@@ -40,6 +40,7 @@ export function useEmployeeAdjustmentsColumns({
             {
               id: "employee",
               header: "الموظف",
+              meta: { exportValue: (a: EmployeeAdjustment) => [a.employee?.name, a.employee?.employee_number].filter(Boolean).join(" ") },
               cell: ({ row }: { row: { original: EmployeeAdjustment } }) => (
                 <div className="flex flex-col">
                   <span className="font-bold text-app-label-primary">
@@ -56,12 +57,13 @@ export function useEmployeeAdjustmentsColumns({
       {
         id: "period",
         header: "الشهر",
-        meta: { className: "font-mono" },
+        meta: { exportValue: (a) => a.period, className: "font-mono" },
         cell: ({ row }) => row.original.period,
       },
       {
         id: "kind",
         header: "النوع",
+        meta: { exportValue: (a) => ADJUSTMENT_KIND_LABEL[a.kind] },
         cell: ({ row }) => (
           <span
             className={`whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-bold ${
@@ -77,6 +79,7 @@ export function useEmployeeAdjustmentsColumns({
       {
         id: "code",
         header: "البند",
+        meta: { exportValue: (a) => nameOf(a.kind, a.code) },
         cell: ({ row }) => (
           <div className="flex flex-col">
             <span className="text-app-label-primary">{nameOf(row.original.kind, row.original.code)}</span>
@@ -87,18 +90,19 @@ export function useEmployeeAdjustmentsColumns({
       {
         id: "amount",
         header: "المبلغ",
-        meta: { align: "end", className: "font-mono font-bold" },
+        meta: { exportValue: (a) => (a.kind === "deduction" ? -Number(a.amount) : Number(a.amount)), align: "end", className: "font-mono font-bold" },
         cell: ({ row }) => `${row.original.kind === "deduction" ? "−" : "+"}${formatPayMoney(row.original.amount)}`,
       },
       {
         id: "reason",
         header: "السبب",
-        meta: { className: "text-app-label-secondary" },
+        meta: { exportValue: (a) => a.reason, className: "text-app-label-secondary" },
         cell: ({ row }) => row.original.reason,
       },
       {
         id: "status",
         header: "الحالة",
+        meta: { exportValue: (a) => ADJUSTMENT_STATUS_LABEL[a.status] ?? a.status },
         cell: ({ row }) => (
           <div className="flex flex-col items-start gap-0.5">
             <AdjustmentStatusChip status={row.original.status} />
@@ -111,12 +115,13 @@ export function useEmployeeAdjustmentsColumns({
       {
         id: "created_by",
         header: "أدخلها",
-        meta: { className: "text-app-label-secondary" },
+        meta: { exportValue: (a) => a.created_by?.name, className: "text-app-label-secondary" },
         cell: ({ row }) => row.original.created_by?.name ?? "—",
       },
       {
         id: "actions",
         header: "",
+        meta: { export: false },
         enableSorting: false,
         cell: ({ row }) => renderActions(row.original),
       },

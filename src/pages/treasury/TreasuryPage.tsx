@@ -252,6 +252,7 @@ export const TreasuryPage: React.FC = () => {
   const fxRateColumns = useTreasuryFxRatesColumns();
   const fxRateTableData = useMemo(() => fxRates, [fxRates]);
   const fxRateTable = useDataTable({
+    exportFileName: "fx-rates",
     columns: fxRateColumns,
     data: fxRateTableData,
     enableSorting: true,
@@ -263,6 +264,7 @@ export const TreasuryPage: React.FC = () => {
   const bankHoldColumns = useTreasuryBankHoldsColumns();
   const bankHoldTableData = useMemo(() => bankHolds, [bankHolds]);
   const bankHoldTable = useDataTable({
+    exportFileName: "bank-holds",
     columns: bankHoldColumns,
     data: bankHoldTableData,
     enableSorting: true,
@@ -790,6 +792,7 @@ const BlackMarketTable: React.FC<BlackMarketTableProps> = ({ tab, allRows, marke
   const columns = useBlackMarketColumns();
 
   const table = useDataTable({
+    exportFileName: `payment-requests-${tab}`,
     columns,
     data: visible,
     enableSorting: true,

@@ -86,6 +86,7 @@ export const ReorderReportPage: React.FC = () => {
       {
         id: "item",
         header: "الصنف",
+        meta: { exportValue: (r) => [r.item_code, r.item_name].filter(Boolean).join(" — ") },
         enableSorting: false,
         cell: ({ row }) => (
           <div>
@@ -104,6 +105,7 @@ export const ReorderReportPage: React.FC = () => {
       {
         id: "warehouse",
         header: "المخزن",
+        meta: { exportValue: (r) => warehouses.find((w) => w.id === r.warehouse_id)?.label ?? r.warehouse_name },
         enableSorting: false,
         cell: ({ row }) => (
           <span className="text-xs text-app-label-secondary">
@@ -115,7 +117,7 @@ export const ReorderReportPage: React.FC = () => {
         id: "bin_location",
         header: "موقع الرف",
         enableSorting: false,
-        meta: { className: "font-mono text-xs" },
+        meta: { exportValue: (r) => r.bin_location, className: "font-mono text-xs" },
         cell: ({ row }) => row.original.bin_location ?? "—",
       },
       {
@@ -136,28 +138,28 @@ export const ReorderReportPage: React.FC = () => {
         id: "min_qty",
         header: "الحد الأدنى",
         enableSorting: false,
-        meta: { className: "font-mono text-app-label-secondary" },
+        meta: { exportValue: (r) => r.min_qty, className: "font-mono text-app-label-secondary" },
         cell: ({ row }) => qty(row.original.min_qty),
       },
       {
         id: "max_qty",
         header: "الحد الأقصى",
         enableSorting: false,
-        meta: { className: "font-mono text-app-label-secondary" },
+        meta: { exportValue: (r) => r.max_qty, className: "font-mono text-app-label-secondary" },
         cell: ({ row }) => qty(row.original.max_qty),
       },
       {
         id: "reorder_qty",
         header: "كمية إعادة الطلب",
         enableSorting: false,
-        meta: { className: "font-mono text-app-label-secondary" },
+        meta: { exportValue: (r) => r.reorder_qty, className: "font-mono text-app-label-secondary" },
         cell: ({ row }) => qty(row.original.reorder_qty),
       },
       {
         id: "suggested_qty",
         accessorKey: "suggested_qty",
         header: "الكمية المقترحة",
-        meta: { className: "font-mono" },
+        meta: { exportValue: (r) => (r.needs_reorder ? r.suggested_qty : null), className: "font-mono" },
         cell: ({ row }) =>
           row.original.needs_reorder ? (
             <span className="font-bold text-app-accent">{qty(row.original.suggested_qty)}</span>
@@ -168,6 +170,7 @@ export const ReorderReportPage: React.FC = () => {
       {
         id: "status",
         header: "الحالة",
+        meta: { exportValue: (r) => (r.needs_reorder ? "يحتاج إعادة طلب" : "كافٍ") },
         enableSorting: false,
         cell: ({ row }) =>
           row.original.needs_reorder ? (
@@ -186,7 +189,7 @@ export const ReorderReportPage: React.FC = () => {
       id: "actions",
       header: "",
       enableSorting: false,
-      meta: { align: "end" },
+      meta: { export: false, align: "end" },
       cell: ({ row }) => (
         <div className="flex items-center justify-end gap-2">
           <Link
@@ -213,6 +216,7 @@ export const ReorderReportPage: React.FC = () => {
   }, [canRestock, openRestock, warehouses]);
 
   const table = useDataTable({
+    exportFileName: "reorder-report",
     columns,
     data: rows,
     enableSorting: true,

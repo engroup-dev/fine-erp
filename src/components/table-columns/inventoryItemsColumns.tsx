@@ -29,6 +29,7 @@ export function useInventoryItemsColumns({ onEdit }: UseInventoryItemsColumnsArg
       {
         id: "category",
         header: "الفئة والنوع",
+        meta: { exportValue: (i) => [i.category?.name ?? "بدون فئة", ITEM_TYPE_LABELS[i.item_type as InventoryItemType] ?? i.item_type].filter(Boolean).join(" / ") },
         enableSorting: false,
         cell: ({ row }) => {
           const cat = row.original.category;
@@ -57,7 +58,7 @@ export function useInventoryItemsColumns({ onEdit }: UseInventoryItemsColumnsArg
         id: "uom",
         header: "وحدة القياس والتعبئة",
         enableSorting: false,
-        meta: { className: "font-mono font-medium text-app-label-secondary" },
+        meta: { exportValue: (i) => { const cap = Number(i.container_capacity); const uom = UOM_LABELS[i.unit_of_measure] ?? i.unit_of_measure; return cap > 0 && i.primary_uom ? `1 ${i.primary_uom} = ${cap} ${uom}` : uom; }, className: "font-mono font-medium text-app-label-secondary" },
         cell: ({ row }) => {
           const item = row.original;
           const cap = Number(item.container_capacity);
@@ -81,7 +82,7 @@ export function useInventoryItemsColumns({ onEdit }: UseInventoryItemsColumnsArg
         id: "dimensions",
         header: "المقاس",
         enableSorting: false,
-        meta: { className: "font-mono text-app-label-secondary" },
+        meta: { exportValue: (i) => (!i.length_m && !i.width_m && !i.height_m ? null : `${i.length_m ?? "—"} × ${i.width_m ?? "—"} × ${i.height_m ?? "—"}`), className: "font-mono text-app-label-secondary" },
         cell: ({ row }) => {
           const { length_m, width_m, height_m } = row.original;
           if (!length_m && !width_m && !height_m) {
@@ -98,7 +99,7 @@ export function useInventoryItemsColumns({ onEdit }: UseInventoryItemsColumnsArg
         id: "pricing",
         header: "الأسعار (قطاعي / جملة)",
         enableSorting: false,
-        meta: { className: "text-xs" },
+        meta: { exportAs: [{ header: "سعر القطاعي", value: (i) => (i.selling_price != null ? Number(i.selling_price) : null) }, { header: "سعر الجملة", value: (i) => (i.wholesale_price != null ? Number(i.wholesale_price) : null) }, { header: "سعر التكلفة", value: (i) => (i.cost_price != null ? Number(i.cost_price) : null) }], className: "text-xs" },
         cell: ({ row }) => {
           const item = row.original;
           const retail = item.selling_price !== null && item.selling_price !== undefined ? Number(item.selling_price) : null;
@@ -143,7 +144,7 @@ export function useInventoryItemsColumns({ onEdit }: UseInventoryItemsColumnsArg
         id: "actions",
         header: "",
         enableSorting: false,
-        meta: { align: "end" },
+        meta: { export: false, align: "end" },
         cell: ({ row }) => {
           const item = row.original;
           return (

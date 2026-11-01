@@ -316,7 +316,7 @@ export const WorkShiftsPage: React.FC = () => {
         id: "times",
         header: "الوقت",
         enableSorting: false,
-        meta: { className: "font-mono text-app-label-secondary" },
+        meta: { exportValue: (s) => (s.start_time || s.end_time ? `${s.start_time ?? "—"} – ${s.end_time ?? "—"}` : null), className: "font-mono text-app-label-secondary" },
         cell: ({ row }) =>
           row.original.start_time || row.original.end_time ? (
             <span dir="ltr">
@@ -344,7 +344,7 @@ export const WorkShiftsPage: React.FC = () => {
               id: "actions",
               header: "",
               enableSorting: false,
-              meta: { align: "end" as const },
+              meta: { export: false, align: "end" as const },
               cell: ({ row }: { row: { original: WorkShift } }) => (
                 <div className="flex items-center justify-end gap-1.5">
                   <button
@@ -374,6 +374,7 @@ export const WorkShiftsPage: React.FC = () => {
   );
 
   const table = useDataTable({
+    exportFileName: "work-shifts",
     columns,
     data: shifts,
     enableSorting: true,

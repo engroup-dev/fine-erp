@@ -61,6 +61,7 @@ export const AdminEntitiesPage: React.FC = () => {
 
   const tableData = useMemo(() => entities, [entities]);
   const entitiesTable = useDataTable({
+    exportFileName: "entities",
     columns,
     data: tableData,
     enableSorting: true,

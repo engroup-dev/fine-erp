@@ -56,6 +56,8 @@ export const AccountDetailsContent: React.FC<AccountDetailsContentProps> = ({ ac
   });
 
   const table = useDataTable({
+    // One CSV button per grid: the statement's own CSV button exports it.
+    enableExport: false,
     columns,
     data: ledgerData,
     enableSorting: false,

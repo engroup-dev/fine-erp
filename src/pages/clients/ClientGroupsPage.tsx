@@ -239,6 +239,7 @@ export const ClientGroupsPage: React.FC = () => {
       {
         accessorKey: "default_price_tier",
         header: "التسعير الافتراضي",
+        meta: { exportValue: (g) => PRICE_TIER_LABEL[g.default_price_tier] ?? g.default_price_tier },
         cell: ({ row }) => (
           <span
             className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
@@ -257,7 +258,7 @@ export const ClientGroupsPage: React.FC = () => {
               id: "actions",
               header: "",
               enableSorting: false,
-              meta: { align: "end" as const },
+              meta: { export: false, align: "end" as const },
               cell: ({ row }: { row: { original: ClientGroup } }) => (
                 <div className="flex items-center justify-end gap-1.5">
                   <button
@@ -287,6 +288,7 @@ export const ClientGroupsPage: React.FC = () => {
   );
 
   const table = useDataTable({
+    exportFileName: "client-groups",
     columns,
     data: groups,
     enableSorting: true,

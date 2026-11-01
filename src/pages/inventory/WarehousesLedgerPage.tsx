@@ -22,6 +22,7 @@ export const WarehousesLedgerPage: React.FC = () => {
   const columns = useWarehousesColumns();
   const tableData = useMemo(() => warehouses ?? [], [warehouses]);
   const table = useDataTable({
+    exportFileName: "warehouses",
     columns,
     data: tableData,
     enableSorting: true,

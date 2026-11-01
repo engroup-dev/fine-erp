@@ -271,6 +271,7 @@ export const BankReconciliationPage: React.FC = () => {
       {
         accessorKey: "statement_balance",
         header: "رصيد الكشف",
+        meta: { exportAs: [{ header: "رصيد الكشف", value: (r) => Number(r.statement_balance) }, { header: "العملة", value: (r) => r.cash_account?.currency || bankCurrency }] },
         cell: ({ row }) => (
           <span className="font-mono text-xs font-semibold">
             {formatNumber(row.original.statement_balance)}{" "}
@@ -281,6 +282,7 @@ export const BankReconciliationPage: React.FC = () => {
       {
         accessorKey: "status",
         header: "الحالة",
+        meta: { exportValue: (r) => r.status_label || (r.status === "finished" ? "منتهية" : "مسودة") },
         cell: ({ row }) => {
           const isFin = row.original.status === "finished";
           return (
@@ -301,6 +303,7 @@ export const BankReconciliationPage: React.FC = () => {
       {
         id: "finished_by",
         header: "أنهاها",
+        meta: { exportValue: (r) => r.finished_by?.name },
         cell: ({ row }) => (
           <span className="text-xs text-app-label-secondary">
             {row.original.finished_by?.name || "—"}
@@ -310,6 +313,7 @@ export const BankReconciliationPage: React.FC = () => {
       {
         id: "action_date",
         header: "التاريخ",
+        meta: { exportValue: (r) => r.finished_at || r.created_at },
         cell: ({ row }) => {
           const d = row.original.finished_at || row.original.created_at;
           return (
@@ -322,6 +326,7 @@ export const BankReconciliationPage: React.FC = () => {
       {
         id: "actions",
         header: "",
+        meta: { export: false },
         cell: ({ row }) => {
           const isCurrent = selectedReconciliationId === row.original.id;
           return (
@@ -350,6 +355,7 @@ export const BankReconciliationPage: React.FC = () => {
   );
 
   const pastTable = useDataTable({
+    exportFileName: "bank-reconciliations",
     columns: pastColumns,
     data: reconciliations,
     enableSorting: false,
@@ -390,7 +396,7 @@ export const BankReconciliationPage: React.FC = () => {
             />
           </div>
         ),
-        meta: {
+        meta: { exportValue: (l) => (l.cleared ? "مسوّى" : "غير مسوّى"), exportHeader: "التسوية",
           align: "center",
         },
         size: 50,
@@ -418,6 +424,7 @@ export const BankReconciliationPage: React.FC = () => {
       {
         accessorKey: "description",
         header: "البيان",
+        meta: { exportValue: (l) => (l.memo ? `${l.description} — ${l.memo}` : l.description) },
         cell: ({ row }) => (
           <div>
             <div className="text-xs font-medium text-app-label-primary">
@@ -483,6 +490,7 @@ export const BankReconciliationPage: React.FC = () => {
   );
 
   const linesTable = useDataTable({
+    exportFileName: "bank-reconciliation-lines",
     columns: lineColumns,
     data: filteredLines,
     enableSorting: false,

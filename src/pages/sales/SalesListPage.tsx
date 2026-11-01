@@ -21,6 +21,7 @@ export const SalesListPage: React.FC = () => {
   const columns = useSalesColumns({ onOpen: (sale: Sale) => navigate(`/sales/${sale.id}`) });
   const rows = useMemo(() => sales, [sales]);
   const table = useDataTable({
+    exportFileName: "sales",
     columns,
     data: rows,
     enableSorting: false,

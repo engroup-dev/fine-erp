@@ -170,7 +170,7 @@ export function useBatchDraftRowsColumns({
       {
         id: "row_actions",
         header: "",
-        meta: { align: "end" },
+        meta: { export: false, align: "end" },
         cell: ({ row }) =>
           rowsCount > 1 ? (
             <button

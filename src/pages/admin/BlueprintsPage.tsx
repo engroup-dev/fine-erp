@@ -71,6 +71,7 @@ export const BlueprintsPage: React.FC = () => {
       {
         id: "roles",
         header: "الأدوار الافتراضية",
+        meta: { exportValue: (b: BlueprintEntry) => Object.keys(b.default_role_template ?? {}).length },
         enableSorting: false,
         cell: ({ row }: { row: { original: BlueprintEntry } }) => (
           <span className="text-[11px] text-app-label-secondary">
@@ -109,6 +110,7 @@ export const BlueprintsPage: React.FC = () => {
       {
         id: "actions",
         header: "",
+        meta: { export: false },
         enableSorting: false,
         cell: ({ row }: { row: { original: BlueprintEntry } }) => {
           const isDeleted = Boolean(row.original.deleted_at);
@@ -154,6 +156,7 @@ export const BlueprintsPage: React.FC = () => {
   );
 
   const table = useDataTable({
+    exportFileName: "unit-blueprints",
     columns,
     data: blueprints,
     enableSorting: true,

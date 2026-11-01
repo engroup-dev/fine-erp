@@ -7,7 +7,7 @@ import {
   useApproveLandedCostLine,
   useMarkLandedCostLinePaid,
 } from "../../hooks/useProcurement";
-import { AllocationPaymentActions } from "../allocations/AllocationPaymentActions";
+import { AllocationPaymentActions, ALLOCATION_STATUS_LABEL } from "../allocations/AllocationPaymentActions";
 
 export interface UsePurchaseOrderLandedCostColumnsArgs {
   selectedOrder: PurchaseOrder | null;
@@ -34,31 +34,31 @@ export function usePurchaseOrderLandedCostColumns({
         id: "type",
         header: "نوع التكلفة",
         cell: ({ row }) => row.original.type,
-        meta: { className: "font-semibold" },
+        meta: { exportValue: (r) => r.type, className: "font-semibold" },
       },
       {
         id: "amount",
         header: "المبلغ",
         cell: ({ row }) => `${formatNumber(row.original.amount)} ${row.original.currency}`,
-        meta: { className: "font-mono font-bold" },
+        meta: { exportAs: [{ header: "المبلغ", value: (r) => Number(r.amount) }, { header: "العملة", value: (r) => r.currency }], className: "font-mono font-bold" },
       },
       {
         id: "note",
         header: "الملاحظة",
         cell: ({ row }) => row.original.note || "—",
-        meta: { className: "text-app-label-secondary max-w-xs truncate" },
+        meta: { exportValue: (r) => r.note, className: "text-app-label-secondary max-w-xs truncate" },
       },
       {
         id: "responsible",
         header: "المسؤول",
         cell: ({ row }) => row.original.payer?.name ?? row.original.approver?.name ?? "—",
-        meta: { className: "text-app-label-secondary" },
+        meta: { exportValue: (r) => r.payer?.name ?? r.approver?.name, className: "text-app-label-secondary" },
       },
       {
         id: "status_action",
         header: "الحالة والإجراء",
         enableSorting: false,
-        meta: { align: "end" },
+        meta: { exportValue: (r) => ALLOCATION_STATUS_LABEL[r.status] ?? r.status, align: "end" },
         cell: ({ row }) => {
           const lc = row.original;
           const orderUnitId = selectedOrder?.operating_unit_id;

@@ -15,7 +15,9 @@ import {
   MaterialRequest,
   MaterialRequestModule,
   MaterialRequestStatus,
+  materialsApi,
 } from "../../api/endpoints/materials";
+import { fetchAllPages } from "../../lib/utils/fetchAllPages";
 import { SearchableSelect } from "../../components/ui/SearchableSelect";
 import { toast } from "../../stores/toastStore";
 import { apiErrorPayload } from "../../api/endpoints/production";
@@ -30,9 +32,29 @@ export const MaterialRequestsPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<MaterialRequestStatus | "">("");
   const [moduleFilter, setModuleFilter] = useState<MaterialRequestModule | "">("");
 
-  const { data, isLoading, refetch } = useMaterialRequests({
-    status: statusFilter || undefined,
+  // Server paging: the endpoint returns 25 requests a page by default.
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(25);
+
+  const { data, isLoading, refetch } = useMaterialRequests(
+    {
+      status: statusFilter || undefined,
+      fulfilling_module: moduleFilter || undefined,
+      page,
+      per_page: perPage,
+    },
+    { keepPrevious: true },
+  );
+  // The header counts span every page: one-row reads whose paginator total is the count.
+  const { data: pendingPage, refetch: refetchPending } = useMaterialRequests({
+    status: "pending",
     fulfilling_module: moduleFilter || undefined,
+    per_page: 1,
+  });
+  const { data: inProgressPage, refetch: refetchInProgress } = useMaterialRequests({
+    status: "in_progress",
+    fulfilling_module: moduleFilter || undefined,
+    per_page: 1,
   });
 
   const startMutation = useStartMaterialRequest();
@@ -41,8 +63,8 @@ export const MaterialRequestsPage: React.FC = () => {
 
   const requests: MaterialRequest[] = data?.data ?? [];
 
-  const totalPending = requests.filter((r) => r.status === "pending").length;
-  const totalInProgress = requests.filter((r) => r.status === "in_progress").length;
+  const totalPending = pendingPage?.total ?? 0;
+  const totalInProgress = inProgressPage?.total ?? 0;
 
   const start = (id: string) => {
     startMutation.mutate(id, {
@@ -75,12 +97,34 @@ export const MaterialRequestsPage: React.FC = () => {
 
   const tableData = useMemo(() => requests, [requests]);
   const requestsTable = useDataTable({
+    exportFileName: "material-requests",
+    // Every page under the current filters, not just the one on screen.
+    fetchAllRowsForExport: () =>
+      fetchAllPages(async (p, size) =>
+        (
+          await materialsApi.list({
+            status: statusFilter || undefined,
+            fulfilling_module: moduleFilter || undefined,
+            page: p,
+            per_page: size,
+          })
+        ).data,
+      ),
     columns,
     data: tableData,
     enableSorting: true,
     enableGlobalFilter: false,
-    pageSize: 10,
     getRowId: (r) => r.id,
+    serverPagination: {
+      page,
+      perPage,
+      total: data?.total ?? 0,
+      lastPage: data?.last_page ?? 1,
+      onChange: (p, size) => {
+        setPage(p);
+        setPerPage(size);
+      },
+    },
   });
 
   return (
@@ -106,7 +150,12 @@ export const MaterialRequestsPage: React.FC = () => {
             </span>
           </div>
           <button
-            onClick={() => refetch()}
+            onClick={() => {
+              // The header counts are separate queries; refresh them with the list.
+              refetch();
+              refetchPending();
+              refetchInProgress();
+            }}
             className="flex items-center gap-1.5 rounded-xl border border-app-separator bg-app-bg-secondary px-3 py-2 text-xs font-semibold text-app-label-primary hover:bg-app-fill-f1 transition-colors"
           >
             <RefreshCw className="h-3.5 w-3.5" /> تحديث
@@ -126,7 +175,10 @@ export const MaterialRequestsPage: React.FC = () => {
             { value: "cancelled", label: STATUS_LABEL.cancelled },
           ]}
           value={statusFilter ? { value: statusFilter, label: STATUS_LABEL[statusFilter] } : { value: "", label: "All" }}
-          onChange={(v) => setStatusFilter((v?.value ?? "") as MaterialRequestStatus | "")}
+          onChange={(v) => {
+            setStatusFilter((v?.value ?? "") as MaterialRequestStatus | "");
+            setPage(1);
+          }}
           getOptionId={(v) => v.value}
           getOptionLabel={(v) => v.label}
           placeholder="All"
@@ -141,7 +193,10 @@ export const MaterialRequestsPage: React.FC = () => {
             { value: "procurement", label: MODULE_LABEL.procurement },
           ]}
           value={moduleFilter ? { value: moduleFilter, label: MODULE_LABEL[moduleFilter] } : { value: "", label: "All" }}
-          onChange={(v) => setModuleFilter((v?.value ?? "") as MaterialRequestModule | "")}
+          onChange={(v) => {
+            setModuleFilter((v?.value ?? "") as MaterialRequestModule | "");
+            setPage(1);
+          }}
           getOptionId={(v) => v.value}
           getOptionLabel={(v) => v.label}
           placeholder="All"

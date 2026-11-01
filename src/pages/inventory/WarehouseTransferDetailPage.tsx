@@ -40,6 +40,7 @@ const WarehouseTransferDetailPage: React.FC = () => {
   const movementColumns = useInventoryMovementColumns();
   const movementRows = useMemo(() => movements ?? [], [movements]);
   const movementsTable = useDataTable({
+    exportFileName: "transfer-movements",
     columns: movementColumns,
     data: movementRows,
     enableSorting: true,

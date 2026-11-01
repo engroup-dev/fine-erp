@@ -2,10 +2,10 @@ import React, { useMemo, useState } from "react";
 import { ListTree, Plus, X, Eye, Maximize2, Search, RotateCcw, ExternalLink, ChevronDown, Snowflake } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { isAxiosError } from "axios";
-import { useAccounts, useAccountLedger, useCreateAccount, useUpdateAccountStatus } from "../../hooks/useAccounting";
+import { useAccounts, useAccountLedger, useCreateAccount, useIsCompanyWide, useUpdateAccountStatus } from "../../hooks/useAccounting";
 import { apiErrorMessage } from "../../api/endpoints/production";
 import { usePermissions } from "../../hooks/usePermissions";
-import { ACCOUNT_TYPE_LABEL, type Account, type AccountType } from "../../api/endpoints/accounting";
+import { ACCOUNT_TYPE_LABEL, accountingApi, type Account, type AccountType } from "../../api/endpoints/accounting";
 import { formatNumber } from "../../lib/utils/format";
 import { DataTable, useDataTable } from "../../components/ui/DataTable";
 import { useChartOfAccountsLedgerColumns } from "../../components/table-columns/chartOfAccountsColumns";
@@ -297,6 +297,7 @@ export const ChartOfAccountsPage: React.FC = () => {
   // (removed) reparentAccountId state — reparenting is now done inline in the edit dialog
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
   const [includeChildren, setIncludeChildren] = useState(false);
+  const companyWide = useIsCompanyWide();
 
   const handleViewChange = (next: "effected" | "full") => {
     setView(next);
@@ -450,6 +451,19 @@ export const ChartOfAccountsPage: React.FC = () => {
   const ledgerColumns = useChartOfAccountsLedgerColumns();
   const ledgerData = useMemo(() => ledger?.data ?? [], [ledger]);
   const ledgerTable = useDataTable({
+    exportFileName: "account-ledger",
+    // The ledger endpoint returns every movement with all=1: export all of them, not the page on screen.
+    fetchAllRowsForExport: async () => {
+      if (!selected) return [];
+      const res = await accountingApi.getAccountLedger(selected.id, {
+        search: sideSearch.trim() || undefined,
+        include_children: includeChildren,
+        order: "desc",
+        company_wide: companyWide,
+        all: true,
+      });
+      return res.data.data;
+    },
     columns: ledgerColumns,
     data: ledgerData,
     enableSorting: false,

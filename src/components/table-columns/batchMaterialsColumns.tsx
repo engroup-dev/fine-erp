@@ -29,6 +29,7 @@ export function useBatchMaterialsColumns(
       {
         id: "item",
         header: "المادة",
+        meta: { exportValue: (r) => [r.inventory_item?.code, r.inventory_item?.name].filter(Boolean).join(" — ") },
         cell: ({ row }) => (
           <div>
             <p className="font-semibold text-app-label-primary">{row.original.inventory_item?.name ?? "—"}</p>
@@ -39,12 +40,13 @@ export function useBatchMaterialsColumns(
       {
         id: "lot",
         header: "اللوت",
-        meta: { className: "font-mono" },
+        meta: { exportValue: (r) => r.stock_lot?.lot_number, className: "font-mono" },
         cell: ({ row }) => row.original.stock_lot?.lot_number ?? "—",
       },
       {
         id: "quantity",
         header: "الكمية",
+        meta: { exportValue: (r) => r.quantity },
         cell: ({ row }) => (
           <span className="font-mono">
             {formatNumber(row.original.quantity, { maximumFractionDigits: 4 })}{" "}
@@ -55,18 +57,19 @@ export function useBatchMaterialsColumns(
       {
         id: "unit_cost",
         header: "تكلفة الوحدة",
-        meta: { className: "font-mono" },
+        meta: { exportValue: (r) => r.unit_cost, className: "font-mono" },
         cell: ({ row }) => formatNumber(row.original.unit_cost, { maximumFractionDigits: 4 }),
       },
       {
         id: "total_cost",
         header: "الإجمالي (د.ل)",
-        meta: { className: "font-mono font-bold" },
+        meta: { exportValue: (r) => r.total_cost, className: "font-mono font-bold" },
         cell: ({ row }) => formatNumber(row.original.total_cost),
       },
       {
         id: "issued",
         header: "صُرفت بواسطة",
+        meta: { exportValue: (r) => `${issuerName(r)} ${formatDateTime(r.created_at)}` },
         cell: ({ row }) => (
           <div>
             <p className="text-app-label-primary">{issuerName(row.original)}</p>
@@ -80,6 +83,7 @@ export function useBatchMaterialsColumns(
       cols.push({
         id: "actions",
         header: "",
+        meta: { export: false },
         cell: ({ row }) => (
           <button
             type="button"

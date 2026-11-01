@@ -94,6 +94,7 @@ export function useFixedAssetsColumns({
       {
         id: "status",
         header: "الحالة",
+        meta: { exportValue: (a) => ASSET_STATUS_LABEL[a.status] },
         enableSorting: false,
         cell: ({ row }) => (
           <span className={`px-2 py-1 text-[10px] font-bold rounded-full ${STATUS_STYLE[row.original.status]}`}>
@@ -105,7 +106,7 @@ export function useFixedAssetsColumns({
         id: "actions",
         header: "إجراءات",
         enableSorting: false,
-        meta: { align: "end" },
+        meta: { export: false, align: "end" },
         cell: ({ row }) => {
           const asset = row.original;
           const items: RowActionItem[] = [];

@@ -50,18 +50,19 @@ export const AssemblyOrdersPage: React.FC = () => {
       {
         id: "number",
         header: "رقم الأمر",
-        meta: { className: "font-mono font-bold text-app-accent" },
+        meta: { exportValue: (o) => o.number, className: "font-mono font-bold text-app-accent" },
         cell: ({ row }) => row.original.number,
       },
       {
         id: "created_at",
         header: "التاريخ",
-        meta: { className: "font-mono text-xs text-app-label-secondary" },
+        meta: { exportValue: (o) => o.created_at, className: "font-mono text-xs text-app-label-secondary" },
         cell: ({ row }) => formatDate(row.original.created_at),
       },
       {
         id: "finished_item",
         header: "المنتج",
+        meta: { exportValue: (o) => [o.finished_item?.code, o.finished_item?.name, o.bundle ? `من الحزمة: ${o.bundle.name}` : null].filter(Boolean).join(" — ") },
         enableSorting: false,
         cell: ({ row }) => (
           <div>
@@ -77,25 +78,27 @@ export const AssemblyOrdersPage: React.FC = () => {
         id: "quantity",
         header: "الكمية",
         enableSorting: false,
-        meta: { align: "center", className: "font-mono" },
+        meta: { exportValue: (o) => o.quantity, align: "center", className: "font-mono" },
         cell: ({ row }) => formatNumber(row.original.quantity, { maximumFractionDigits: 4 }),
       },
       {
         id: "lines_count",
         header: "المكونات",
         enableSorting: false,
-        meta: { align: "center", className: "font-mono text-app-label-secondary" },
+        meta: { exportValue: (o) => o.lines_count ?? 0, align: "center", className: "font-mono text-app-label-secondary" },
         cell: ({ row }) => formatInteger(row.original.lines_count ?? 0),
       },
       {
         id: "warehouse",
         header: "مخزن الإنتاج",
+        meta: { exportValue: (o) => o.output_warehouse?.name },
         enableSorting: false,
         cell: ({ row }) => <span className="text-xs">{row.original.output_warehouse?.name ?? "—"}</span>,
       },
       {
         id: "status",
         header: "الحالة",
+        meta: { exportValue: (o) => ASSEMBLY_STATUS_LABEL[o.status] },
         enableSorting: false,
         cell: ({ row }) => (
           <span className={`px-2 py-1 text-[10px] font-bold rounded-full ${ASSEMBLY_STATUS_STYLE[row.original.status]}`}>
@@ -107,7 +110,7 @@ export const AssemblyOrdersPage: React.FC = () => {
         id: "total_cost",
         header: "التكلفة الفعلية",
         enableSorting: false,
-        meta: { align: "end", className: "font-mono" },
+        meta: { exportValue: (o) => o.total_cost, align: "end", className: "font-mono" },
         cell: ({ row }) =>
           row.original.total_cost === null ? (
             <span className="text-app-label-tertiary">—</span>
@@ -118,6 +121,7 @@ export const AssemblyOrdersPage: React.FC = () => {
       {
         id: "people",
         header: "أنشأه / أتمّه",
+        meta: { exportValue: (o) => [o.created_by?.name, o.completed_by?.name].filter(Boolean).join(" / ") },
         enableSorting: false,
         cell: ({ row }) => (
           <div className="text-[11px] text-app-label-secondary">
@@ -132,6 +136,7 @@ export const AssemblyOrdersPage: React.FC = () => {
 
   const tableData = useMemo(() => data?.data ?? [], [data]);
   const table = useDataTable({
+    exportFileName: "assembly-orders",
     columns,
     data: tableData,
     enableSorting: true,

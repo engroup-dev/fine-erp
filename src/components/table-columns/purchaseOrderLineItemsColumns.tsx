@@ -10,13 +10,13 @@ export function usePurchaseOrderLineItemsColumns(): ColumnDef<PurchaseOrderItem,
         id: "item",
         header: "الصنف",
         cell: ({ row }) => row.original.inventory_item?.name ?? "—",
-        meta: { className: "font-semibold" },
+        meta: { exportValue: (r) => r.inventory_item?.name, className: "font-semibold" },
       },
       {
         id: "code",
         header: "كود الصنف",
         cell: ({ row }) => row.original.inventory_item?.code ?? "—",
-        meta: { className: "font-mono text-app-label-secondary" },
+        meta: { exportValue: (r) => r.inventory_item?.code, className: "font-mono text-app-label-secondary" },
       },
       {
         id: "quantity",
@@ -41,19 +41,19 @@ export function usePurchaseOrderLineItemsColumns(): ColumnDef<PurchaseOrderItem,
             </div>
           );
         },
-        meta: { align: "end", className: "font-mono" },
+        meta: { exportValue: (r) => r.quantity, align: "end", className: "font-mono" },
       },
       {
         id: "unit_price",
         header: "سعر الوحدة",
         cell: ({ row }) => `${formatNumber(Number(row.original.unit_price))} ${row.original.currency}`,
-        meta: { align: "end", className: "font-mono" },
+        meta: { exportValue: (r) => Number(r.unit_price), align: "end", className: "font-mono" },
       },
       {
         id: "line_total",
         header: "الإجمالي",
         cell: ({ row }) => `${formatNumber(Number(row.original.line_total))} ${row.original.currency}`,
-        meta: { align: "end", className: "font-mono font-bold text-app-accent" },
+        meta: { exportAs: [{ header: "الإجمالي", value: (r) => Number(r.line_total) }, { header: "العملة", value: (r) => r.currency }], align: "end", className: "font-mono font-bold text-app-accent" },
       },
     ],
     []

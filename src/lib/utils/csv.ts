@@ -13,11 +13,13 @@ function quote(field: string): string {
 
 /** Cells a spreadsheet would run as a formula (CSV injection); a leading ' keeps them text. */
 const FORMULA_START = /^[=+\-@\t\r]/;
+/** A plain signed number ("-1500.25") is data, not a formula — left as is so it stays numeric. */
+const PLAIN_NUMBER = /^-?\d+(\.\d+)?$/;
 
 function format(value: string | number | null, decimals = 2): string {
   if (value === null) return "";
   if (typeof value === "number") return Number.isFinite(value) ? value.toFixed(decimals) : "";
-  return FORMULA_START.test(value) ? `'${value}` : value;
+  return FORMULA_START.test(value) && !PLAIN_NUMBER.test(value) ? `'${value}` : value;
 }
 
 export function toCsv<T>(rows: T[], columns: CsvColumn<T>[]): string {

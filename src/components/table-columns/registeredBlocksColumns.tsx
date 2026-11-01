@@ -32,6 +32,7 @@ export function useRegisteredBlocksColumns(
           id: "block_type",
           accessorKey: "block_type",
           header: "نوع البلوك",
+          meta: { exportValue: (l) => ({ block: "بلوك", separator: "فاصل", head: "بداية", scrap: "هدر" } as Record<string, string>)[l.block_type ?? "block"] ?? l.block_type },
           cell: ({ row }) => {
             const type = row.original.block_type ?? "block";
             switch (type) {
@@ -82,7 +83,7 @@ export function useRegisteredBlocksColumns(
           id: "dimensions",
           header: "الأبعاد",
           enableSorting: false,
-          meta: { className: "font-mono text-app-label-secondary" },
+          meta: { exportValue: (l) => `${l.length_m} × ${l.width_m} × ${l.height_m}`, className: "font-mono text-app-label-secondary" },
           cell: ({ row }) => (
             <>
               {row.original.length_m}م × {row.original.width_m}م × {row.original.height_m}م
@@ -103,6 +104,7 @@ export function useRegisteredBlocksColumns(
         {
           id: "grade",
           header: "الدرجة",
+          meta: { exportValue: (l) => l.grade },
           enableSorting: false,
           cell: ({ row }) => (
             <span className="px-2 py-1 text-xs font-semibold rounded-full bg-app-accent-subtle text-app-accent">
@@ -131,7 +133,7 @@ export function useRegisteredBlocksColumns(
           id: "actions",
           header: "الإجراءات",
           enableSorting: false,
-          meta: { align: "end" },
+          meta: { export: false, align: "end" },
           cell: ({ row }) => {
             const lot = row.original;
             const items: RowActionItem[] = [

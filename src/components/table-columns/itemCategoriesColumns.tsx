@@ -40,6 +40,7 @@ export function useItemCategoriesColumns({
       {
         id: "item_type",
         header: "نوع الصنف",
+        meta: { exportValue: (r) => (r.item_type ? ITEM_TYPE_LABELS[r.item_type as InventoryItemType] ?? r.item_type : null) },
         enableSorting: false,
         cell: ({ row }) => {
           const type = row.original.item_type;
@@ -57,7 +58,7 @@ export function useItemCategoriesColumns({
         id: "child_code_length",
         header: "طول رمز الفروع",
         enableSorting: false,
-        meta: { align: "center", className: "font-mono text-app-label-secondary" },
+        meta: { exportValue: (r) => r.child_code_length, align: "center", className: "font-mono text-app-label-secondary" },
         cell: ({ row }) => row.original.child_code_length ?? "—",
       },
       {

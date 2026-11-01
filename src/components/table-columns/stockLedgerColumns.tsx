@@ -65,6 +65,7 @@ export function useStockLedgerColumns({
       {
         id: "item",
         header: "الصنف / رمز الصنف (SKU)",
+        meta: { exportValue: (l) => [l.inventory_item?.code, l.inventory_item?.name || "قالب إسفنج"].filter(Boolean).join(" — ") },
         enableSorting: false,
         cell: ({ row }) => (
           <div>
@@ -76,6 +77,7 @@ export function useStockLedgerColumns({
       {
         id: "quantity",
         header: "كمية الحاوية والقياس",
+        meta: { exportValue: (l) => `${l.container_quantity || 1} ${l.inventory_item?.primary_uom || "unit"} / ${l.volume_m3 ? `${l.volume_m3} m³` : `${l.quantity} ${l.inventory_item?.secondary_uom || l.inventory_item?.unit_of_measure || ""}`}` },
         enableSorting: false,
         cell: ({ row }) => (
           <div>
@@ -94,7 +96,7 @@ export function useStockLedgerColumns({
         id: "dimensions",
         header: "الأبعاد / الخصائص",
         enableSorting: false,
-        meta: { className: "text-xs font-mono text-app-label-secondary" },
+        meta: { exportValue: (l) => [l.length_m ? `${l.length_m} × ${l.width_m} × ${l.height_m}` : null, ...Object.entries(l.attribute_values ?? {}).map(([k, v]) => `${k}: ${String(v)}`)].filter(Boolean).join("، "), className: "text-xs font-mono text-app-label-secondary" },
         cell: ({ row }) => (
           <>
             {row.original.length_m ? (
@@ -126,6 +128,7 @@ export function useStockLedgerColumns({
       {
         id: "grade",
         header: "الدرجة",
+        meta: { exportValue: (l) => l.grade },
         enableSorting: false,
         cell: ({ row }) => (
           <span className="px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800">
@@ -136,6 +139,7 @@ export function useStockLedgerColumns({
       {
         id: "status",
         header: "الحالة",
+        meta: { exportValue: (l) => l.status },
         enableSorting: false,
         cell: ({ row }) => (
           <span
@@ -153,7 +157,7 @@ export function useStockLedgerColumns({
         id: "actions",
         header: "إجراء التشذيب",
         enableSorting: false,
-        meta: { align: "end" },
+        meta: { export: false, align: "end" },
         cell: ({ row }) => {
           const lot = row.original;
           return lot.status === "available" && lot.length_m ? (

@@ -21,7 +21,7 @@ export function useAdminEntitiesColumns({
       {
         accessorKey: "entity_type",
         header: "النوع",
-        meta: { className: "text-app-label-secondary" },
+        meta: { exportValue: (r) => (r.entity_type === "organization" ? "شركة" : "فرد"), className: "text-app-label-secondary" },
         cell: ({ row }) => (row.original.entity_type === "organization" ? "شركة" : "فرد"),
       },
       {
@@ -33,6 +33,7 @@ export function useAdminEntitiesColumns({
       {
         id: "user_account",
         header: "حساب النظام",
+        meta: { exportValue: (r) => (r.user_id ? "مربوط" : "بدون حساب") },
         accessorFn: (entity) => Boolean(entity.user_id),
         cell: ({ row }) =>
           row.original.user_id ? (
@@ -49,7 +50,7 @@ export function useAdminEntitiesColumns({
         id: "actions",
         header: "إجراءات",
         enableSorting: false,
-        meta: { align: "end" },
+        meta: { export: false, align: "end" },
         cell: ({ row }) => {
           const entity = row.original;
           if (entity.user_id) return null;

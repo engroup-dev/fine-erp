@@ -238,6 +238,7 @@ export const ReferenceLookupPage: React.FC<{ config: LookupConfig }> = ({
   });
 
   const table = useDataTable({
+    exportFileName: config.key,
     columns,
     data,
     enableSorting: true,

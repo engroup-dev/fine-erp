@@ -104,7 +104,7 @@ export function useClientsColumns({ onEdit, onViewStatement }: UseClientsColumns
         id: "headroom",
         header: "المتبقي من الائتمان",
         enableSorting: false,
-        meta: { className: "font-mono" },
+        meta: { exportValue: (c) => Number(c.credit_limit || 0) - Number(c.current_balance || 0), className: "font-mono" },
         cell: ({ row }) => {
           const creditLimit = Number(row.original.credit_limit || 0);
           const currentBalance = Number(row.original.current_balance || 0);
@@ -136,6 +136,7 @@ export function useClientsColumns({ onEdit, onViewStatement }: UseClientsColumns
       {
         id: "account",
         header: "حساب الأستاذ (COA)",
+        meta: { exportValue: (c) => (c.account ? `${c.account.account_code} - ${c.account.name}` : null) },
         cell: ({ row }) => {
           const acc = row.original.account;
           if (acc) {
@@ -151,6 +152,7 @@ export function useClientsColumns({ onEdit, onViewStatement }: UseClientsColumns
       {
         accessorKey: "status",
         header: "الحالة",
+        meta: { exportValue: (c) => (c.status === "active" ? "نشط" : c.status === "suspended" ? "موقوف" : c.status === "blacklisted" ? "محظور" : c.status) },
         cell: ({ row }) => (
           <span
             className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
@@ -175,7 +177,7 @@ export function useClientsColumns({ onEdit, onViewStatement }: UseClientsColumns
         id: "actions",
         header: "",
         enableSorting: false,
-        meta: { align: "end" },
+        meta: { export: false, align: "end" },
         cell: ({ row }) => {
           const client = row.original;
           return (

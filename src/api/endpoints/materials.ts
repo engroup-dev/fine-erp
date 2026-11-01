@@ -51,6 +51,7 @@ export const materialsApi = {
     requested_for_type?: string;
     requested_for_id?: string;
     page?: number;
+    per_page?: number;
   }) =>
     apiClient.get<{
       data: MaterialRequest[];

@@ -20,18 +20,19 @@ export function useInventoryMovementColumns(): ColumnDef<InventoryMovement, unkn
       {
         id: "created_at",
         header: "التاريخ",
-        meta: { className: "font-mono text-xs text-app-label-secondary" },
+        meta: { exportValue: (r) => r.created_at, className: "font-mono text-xs text-app-label-secondary" },
         cell: ({ row }) => new Date(row.original.created_at).toLocaleString("ar-LY"),
       },
       {
         id: "sku",
         header: "الصنف (رمز)",
-        meta: { className: "font-mono text-app-label-primary" },
+        meta: { exportValue: (r) => r.sku, className: "font-mono text-app-label-primary" },
         cell: ({ row }) => row.original.sku,
       },
       {
         id: "movement_type",
         header: "نوع الحركة",
+        meta: { exportValue: (r) => MOVEMENT_TYPE_LABELS[r.movement_type] ?? r.movement_type },
         cell: ({ row }) => (
           <span className="px-2 py-1 text-xs font-semibold rounded-full bg-app-fill-f1 text-app-label-secondary">
             {MOVEMENT_TYPE_LABELS[row.original.movement_type] ?? row.original.movement_type}
@@ -41,7 +42,7 @@ export function useInventoryMovementColumns(): ColumnDef<InventoryMovement, unkn
       {
         id: "quantity_delta",
         header: "الكمية",
-        meta: {
+        meta: { exportValue: (r) => r.quantity_delta,
           className: "font-mono font-bold",
         },
         cell: ({ row }) => {
@@ -57,13 +58,13 @@ export function useInventoryMovementColumns(): ColumnDef<InventoryMovement, unkn
       {
         id: "unit_cost",
         header: "سعر الوحدة",
-        meta: { className: "font-mono text-app-label-primary" },
+        meta: { exportValue: (r) => r.unit_cost, className: "font-mono text-app-label-primary" },
         cell: ({ row }) => `${formatNumber(row.original.unit_cost)} LYD`,
       },
       {
         id: "value",
         header: "القيمة",
-        meta: { className: "font-mono text-app-label-primary" },
+        meta: { exportValue: (r) => Math.abs(Number(r.quantity_delta)) * Number(r.unit_cost), className: "font-mono text-app-label-primary" },
         cell: ({ row }) =>
           `${formatNumber(Math.abs(Number(row.original.quantity_delta)) * Number(row.original.unit_cost))} LYD`,
       },
@@ -71,7 +72,7 @@ export function useInventoryMovementColumns(): ColumnDef<InventoryMovement, unkn
         id: "reference",
         header: "المستند المرجعي",
         enableSorting: false,
-        meta: { className: "text-xs text-app-label-tertiary" },
+        meta: { exportValue: (r) => r.reference_document_type, className: "text-xs text-app-label-tertiary" },
         cell: ({ row }) => row.original.reference_document_type ?? "--",
       },
     ],

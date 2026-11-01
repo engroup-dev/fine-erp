@@ -49,18 +49,19 @@ export const StockCountsPage: React.FC = () => {
       {
         id: "number",
         header: "رقم الجرد",
-        meta: { className: "font-mono font-bold text-app-accent" },
+        meta: { exportValue: (c) => c.number, className: "font-mono font-bold text-app-accent" },
         cell: ({ row }) => row.original.number,
       },
       {
         id: "count_date",
         header: "تاريخ الجرد",
-        meta: { className: "font-mono text-xs text-app-label-secondary" },
+        meta: { exportValue: (c) => c.count_date.slice(0, 10), className: "font-mono text-xs text-app-label-secondary" },
         cell: ({ row }) => formatDate(row.original.count_date.slice(0, 10)),
       },
       {
         id: "warehouse",
         header: "المخزن",
+        meta: { exportValue: (c) => [c.warehouse?.name, c.category ? `الفئة: ${c.category.name}` : null].filter(Boolean).join(" — ") },
         enableSorting: false,
         cell: ({ row }) => (
           <div>
@@ -74,6 +75,7 @@ export const StockCountsPage: React.FC = () => {
       {
         id: "status",
         header: "الحالة",
+        meta: { exportValue: (c) => `${STOCK_COUNT_STATUS_LABEL[c.status]}${c.blind ? " (جرد أعمى)" : ""}` },
         enableSorting: false,
         cell: ({ row }) => (
           <div className="flex items-center gap-1.5">
@@ -92,12 +94,13 @@ export const StockCountsPage: React.FC = () => {
         id: "lines_count",
         header: "عدد الأسطر",
         enableSorting: false,
-        meta: { align: "center", className: "font-mono text-app-label-secondary" },
+        meta: { exportValue: (c) => c.lines_count ?? 0, align: "center", className: "font-mono text-app-label-secondary" },
         cell: ({ row }) => formatInteger(row.original.lines_count ?? 0),
       },
       {
         id: "people",
         header: "فتحه / اعتمده",
+        meta: { exportValue: (c) => [c.created_by?.name, c.approved_by?.name].filter(Boolean).join(" / ") },
         enableSorting: false,
         cell: ({ row }) => (
           <div className="text-[11px] text-app-label-secondary">
@@ -112,6 +115,7 @@ export const StockCountsPage: React.FC = () => {
 
   const tableData = useMemo(() => data?.data ?? [], [data]);
   const table = useDataTable({
+    exportFileName: "stock-counts",
     columns,
     data: tableData,
     enableSorting: true,

@@ -359,7 +359,7 @@ export const previewCutterSplit = (order: CutterWorkOrder, remnants: CutterRemna
 };
 
 export const cutterApi = {
-  getOrders: (params?: { status?: string; internal_only?: boolean; page?: number }) =>
+  getOrders: (params?: { status?: string; internal_only?: boolean; page?: number; per_page?: number }) =>
     apiClient.get<{ data: CutterWorkOrder[]; current_page: number; last_page: number; total: number }>(
       "/cutter-work-orders",
       { params },

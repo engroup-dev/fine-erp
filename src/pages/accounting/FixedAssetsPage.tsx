@@ -186,6 +186,7 @@ export const FixedAssetsPage: React.FC = () => {
 
   const tableData = useMemo(() => assets?.data ?? [], [assets]);
   const assetsTable = useDataTable({
+    exportFileName: "fixed-assets",
     columns,
     data: tableData,
     enableSorting: true,
@@ -197,6 +198,7 @@ export const FixedAssetsPage: React.FC = () => {
   const scheduleColumns = useFixedAssetsScheduleColumns();
   const scheduleData = useMemo(() => schedule?.rows ?? [], [schedule]);
   const scheduleTable = useDataTable({
+    exportFileName: "depreciation-schedule",
     columns: scheduleColumns,
     data: scheduleData,
     enableSorting: false,

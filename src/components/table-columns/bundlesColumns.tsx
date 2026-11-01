@@ -22,6 +22,7 @@ export function useBundlesColumns({ onEdit, onDelete }: UseBundlesColumnsArgs = 
       {
         id: "items",
         header: "الأصناف",
+        meta: { exportValue: (r) => r.items?.map((i) => i.inventory_item?.name).filter(Boolean).join("، ") },
         enableSorting: false,
         cell: ({ row }) => (
           <span className="text-xs text-app-label-secondary">
@@ -40,7 +41,7 @@ export function useBundlesColumns({ onEdit, onDelete }: UseBundlesColumnsArgs = 
         id: "actions",
         header: "",
         enableSorting: false,
-        meta: { align: "end" },
+        meta: { export: false, align: "end" },
         cell: ({ row }) => {
           const bundle = row.original;
           return (

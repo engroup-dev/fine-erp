@@ -58,6 +58,7 @@ export function useMaterialRequestsColumns({
       {
         id: "item",
         header: "الصنف",
+        meta: { exportValue: (r) => [r.inventory_item?.code, r.inventory_item?.name].filter(Boolean).join(" — ") },
         enableSorting: false,
         cell: ({ row }) => (
           <>
@@ -71,6 +72,7 @@ export function useMaterialRequestsColumns({
       {
         id: "module",
         header: "الوحدة",
+        meta: { exportValue: (r) => MODULE_LABEL[r.fulfilling_module] },
         enableSorting: false,
         cell: ({ row }) => (
           <span
@@ -93,7 +95,7 @@ export function useMaterialRequestsColumns({
         id: "dimensions",
         header: "الأبعاد المطلوبة",
         enableSorting: false,
-        meta: { className: "font-mono text-[11px] text-app-label-secondary" },
+        meta: { exportValue: (r) => { const d = r.target_dimensions; return d ? `${d.length_m ?? "-"} × ${d.width_m ?? "-"} × ${d.height_m ?? "-"}` : null; }, className: "font-mono text-[11px] text-app-label-secondary" },
         cell: ({ row }) => {
           const d = row.original.target_dimensions;
           return d
@@ -104,6 +106,7 @@ export function useMaterialRequestsColumns({
       {
         id: "status",
         header: "الحالة",
+        meta: { exportValue: (r) => STATUS_LABEL[r.status] },
         enableSorting: false,
         cell: ({ row }) => (
           <span
@@ -120,7 +123,7 @@ export function useMaterialRequestsColumns({
         id: "source",
         header: "المصدر",
         enableSorting: false,
-        meta: { className: "text-[10px] text-app-label-tertiary font-mono" },
+        meta: { exportValue: (r) => (r.requested_for_type && r.requested_for_id ? `${r.requested_for_type}#${r.requested_for_id.slice(0, 8)}` : null), className: "text-[10px] text-app-label-tertiary font-mono" },
         cell: ({ row }) => {
           const r = row.original;
           return r.requested_for_type && r.requested_for_id
@@ -132,7 +135,7 @@ export function useMaterialRequestsColumns({
         id: "actions",
         header: "الإجراءات",
         enableSorting: false,
-        meta: { align: "end" },
+        meta: { export: false, align: "end" },
         cell: ({ row }) => {
           const r = row.original;
           const items: RowActionItem[] = [];

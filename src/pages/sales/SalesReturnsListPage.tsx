@@ -35,21 +35,25 @@ export const SalesReturnsListPage: React.FC = () => {
       {
         id: "return_date",
         header: "التاريخ",
+        meta: { exportValue: (r) => r.return_date },
         cell: ({ row }) => <span className="font-mono">{formatDate(row.original.return_date)}</span>,
       },
       {
         id: "sale",
         header: "رقم البيع",
+        meta: { exportValue: (r) => r.order?.order_number },
         cell: ({ row }) => <span className="font-mono">{row.original.order?.order_number ?? "—"}</span>,
       },
       {
         id: "buyer",
         header: "المشتري",
+        meta: { exportValue: (r) => salesReturnBuyer(r) },
         cell: ({ row }) => salesReturnBuyer(row.original),
       },
       {
         id: "refund_method",
         header: "طريقة الرد",
+        meta: { exportValue: (r) => `${REFUND_METHOD_LABEL[r.refund_method] ?? r.refund_method}${r.cash_account?.name ? ` — ${r.cash_account.name}` : ""}` },
         cell: ({ row }) => (
           <span className="text-app-label-secondary">
             {REFUND_METHOD_LABEL[row.original.refund_method] ?? row.original.refund_method}
@@ -60,12 +64,13 @@ export const SalesReturnsListPage: React.FC = () => {
       {
         id: "amount",
         header: "المبلغ",
-        meta: { className: "text-end" },
+        meta: { exportValue: (r) => r.amount, className: "text-end" },
         cell: ({ row }) => <span className="font-mono font-bold">{formatNumber(row.original.amount)}</span>,
       },
       {
         id: "created_by",
         header: "أنشأه",
+        meta: { exportValue: (r) => r.created_by?.name },
         cell: ({ row }) => <span className="text-app-label-secondary">{row.original.created_by?.name ?? "—"}</span>,
       },
     ],
@@ -73,6 +78,7 @@ export const SalesReturnsListPage: React.FC = () => {
   );
 
   const table = useDataTable({
+    exportFileName: "sales-returns",
     columns,
     data: rows,
     enableSorting: false,

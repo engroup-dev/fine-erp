@@ -332,6 +332,8 @@ export const BatchBlocksPage: React.FC = () => {
     onRemoveRow: removeRow,
   });
   const draftTable = useDataTable({
+    // One CSV button per grid: draft rows are an entry form, not a list.
+    enableExport: false,
     columns: draftColumns,
     data: rows,
     enableSorting: false,
@@ -354,6 +356,7 @@ export const BatchBlocksPage: React.FC = () => {
   }, [itemData, scrapItems]);
   const blocksTableData = useMemo(() => blocks ?? [], [blocks]);
   const blocksTable = useDataTable({
+    exportFileName: "batch-blocks",
     columns: blocksColumns,
     data: blocksTableData,
     enableSorting: true,

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   MaterialRequest,
   MaterialRequestFulfilledByType,
@@ -10,10 +10,13 @@ export function useMaterialRequests(params?: {
   fulfilling_module?: MaterialRequest["fulfilling_module"];
   requested_for_type?: string;
   requested_for_id?: string;
-}) {
+  page?: number;
+  per_page?: number;
+}, options?: { keepPrevious?: boolean }) {
   return useQuery({
     queryKey: ["materialRequests", params],
     queryFn: async () => (await materialsApi.list(params)).data,
+    placeholderData: options?.keepPrevious ? keepPreviousData : undefined,
   });
 }
 

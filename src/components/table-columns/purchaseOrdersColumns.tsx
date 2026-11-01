@@ -4,6 +4,20 @@ import { ColumnDef } from "../ui/DataTable";
 import { formatNumber } from "../../lib/utils/format";
 import { PurchaseOrder, PurchaseOrderStatus, getPurchaseOrderTotal } from "../../types/procurement";
 
+/** CSV export text for the status chip (same wording as the page's badge). */
+const PURCHASE_ORDER_STATUS_LABEL: Partial<Record<PurchaseOrderStatus, string>> = {
+  draft: "مسودة",
+  pending_payment: "في انتظار الدفع",
+  awaiting_bank_approval: "حجز بنكي",
+  paid: "مدفوع",
+  in_transit: "في الشحن",
+  at_port: "وصل الميناء",
+  received: "مستلم",
+  approved: "معتمد",
+  closed: "مغلق",
+  complete: "مكتمل ومحسوب",
+};
+
 export interface UsePurchaseOrdersColumnsArgs {
   getStatusBadge: (status: PurchaseOrderStatus) => ReactNode;
   onOpenDetail: (order: PurchaseOrder) => void;
@@ -31,6 +45,7 @@ export function usePurchaseOrdersColumns({
       {
         id: "kind",
         header: "النوع",
+        meta: { exportValue: (o) => (o.kind === "local" ? "محلي" : "أجنبي") },
         accessorFn: (ord) => ord.kind,
         cell: ({ row }) => (
           <span
@@ -74,7 +89,7 @@ export function usePurchaseOrdersColumns({
           }
           return `${formatNumber(row.original.negotiated_price)} ${row.original.currency}`;
         },
-        meta: { className: "font-mono" },
+        meta: { exportValue: (o) => { const items = o.items?.data; if (items && items.length > 1) return `${items.length} أصناف`; return Number(items && items.length === 1 ? items[0].unit_price : o.negotiated_price); }, className: "font-mono" },
       },
       {
         id: "total_amount",
@@ -82,11 +97,12 @@ export function usePurchaseOrdersColumns({
         accessorFn: (ord) => getPurchaseOrderTotal(ord),
         cell: ({ row }) =>
           `${formatNumber(getPurchaseOrderTotal(row.original))} ${row.original.currency}`,
-        meta: { className: "font-mono font-bold text-emerald-700" },
+        meta: { exportAs: [{ header: "إجمالي الاعتماد المستهدف", value: (o) => getPurchaseOrderTotal(o) }, { header: "العملة", value: (o) => o.currency }], className: "font-mono font-bold text-emerald-700" },
       },
       {
         id: "status",
         header: "الحالة الحالية",
+        meta: { exportValue: (o) => PURCHASE_ORDER_STATUS_LABEL[o.status] ?? o.status },
         enableSorting: false,
         cell: ({ row }) => getStatusBadge(row.original.status),
       },
@@ -94,7 +110,7 @@ export function usePurchaseOrdersColumns({
         id: "actions",
         header: "الإجراء",
         enableSorting: false,
-        meta: { align: "end" },
+        meta: { export: false, align: "end" },
         cell: ({ row }) => (
           <div className="flex items-center justify-end gap-1.5">
             {row.original.status === "draft" && onEditItems && (

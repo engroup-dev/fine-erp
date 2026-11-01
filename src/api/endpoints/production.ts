@@ -331,7 +331,7 @@ export const productionApi = {
     apiClient.post<ProductionBatch>(`/production-batches/${id}/transition`, { status }),
 
   getBatches: (params?: { status?: string; page?: number; per_page?: number }) =>
-    apiClient.get<{ data: ProductionBatch[]; current_page: number; last_page: number }>(
+    apiClient.get<{ data: ProductionBatch[]; current_page: number; last_page: number; total: number }>(
       "/production-batches",
       { params },
     ),

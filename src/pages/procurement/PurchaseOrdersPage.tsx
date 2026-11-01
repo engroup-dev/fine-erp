@@ -559,6 +559,7 @@ export const PurchaseOrdersPage: React.FC = () => {
   const deferredOrders = useDeferredValue(orders);
   const ordersTableData = useMemo(() => deferredOrders, [deferredOrders]);
   const ordersTable = useDataTable({
+    exportFileName: "purchase-orders",
     columns: orderColumns,
     data: ordersTableData,
     enableSorting: true,
@@ -577,6 +578,7 @@ export const PurchaseOrdersPage: React.FC = () => {
   const lineItemColumns = usePurchaseOrderLineItemsColumns();
   const lineItemsData = useMemo(() => selectedOrder?.items?.data ?? [], [selectedOrder]);
   const lineItemsTable = useDataTable({
+    exportFileName: "purchase-order-lines",
     columns: lineItemColumns,
     data: lineItemsData,
     enableSorting: false,
@@ -662,6 +664,7 @@ export const PurchaseOrdersPage: React.FC = () => {
   );
   const landedCostColumns = usePurchaseOrderLandedCostColumns(landedCostColumnsArgs);
   const landedCostsTable = useDataTable({
+    exportFileName: "landed-costs",
     columns: landedCostColumns,
     data: landedCosts,
     enableSorting: false,

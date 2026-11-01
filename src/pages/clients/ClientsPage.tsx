@@ -369,6 +369,7 @@ export const ClientsPage: React.FC = () => {
     [clients, groupFilter],
   );
   const clientsTable = useDataTable({
+    exportFileName: "clients",
     columns,
     data: tableData,
     enableSorting: true,

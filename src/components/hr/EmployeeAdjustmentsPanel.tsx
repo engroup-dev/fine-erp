@@ -160,6 +160,7 @@ export const EmployeeAdjustmentsPanel: React.FC<EmployeeAdjustmentsPanelProps> =
 
   const columns = useEmployeeAdjustmentsColumns({ showEmployee: !employee, nameOf, renderActions });
   const table = useDataTable({
+    exportFileName: "employee-adjustments",
     columns,
     data: adjustments,
     // Sorting and a global filter would only reach the loaded page.

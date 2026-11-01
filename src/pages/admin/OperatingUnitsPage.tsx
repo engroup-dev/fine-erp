@@ -130,6 +130,7 @@ export const OperatingUnitsPage: React.FC = () => {
   });
 
   const unitsTable = useDataTable({
+    exportFileName: "operating-units",
     columns,
     data: units,
     enableSorting: true,

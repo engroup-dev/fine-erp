@@ -339,6 +339,7 @@ const WarehouseItemDetailPage: React.FC = () => {
     onPrintLabel: openLotLabel,
   });
   const lotsTable = useDataTable({
+    exportFileName: "item-lots",
     columns: lotColumns,
     data: tableLots,
     enableSorting: true,
@@ -349,6 +350,7 @@ const WarehouseItemDetailPage: React.FC = () => {
   const movementColumns = useInventoryMovementColumns();
   const movementRows = useMemo(() => ledger?.data ?? [], [ledger]);
   const historyTable = useDataTable({
+    exportFileName: "item-movements",
     columns: movementColumns,
     data: movementRows,
     enableSorting: true,

@@ -46,7 +46,7 @@ export function useProductionBatchesColumns({
         id: "formula_params",
         header: "الكثافة / الوقت / السرعة",
         enableSorting: false,
-        meta: { className: "text-app-label-secondary font-mono" },
+        meta: { exportValue: (r) => `${r.formula_params?.density_band ?? "—"} · ${r.formula_params?.cure_time_minutes ?? "—"} دقيقة · ${r.formula_params?.conveyor_speed ?? "—"}`, className: "text-app-label-secondary font-mono" },
         cell: ({ row }) => (
           <>
             {row.original.formula_params?.density_band ?? "—"}
@@ -68,7 +68,7 @@ export function useProductionBatchesColumns({
         id: "scrap",
         header: "الهدر",
         enableSorting: false,
-        meta: { className: "font-mono text-app-label-secondary" },
+        meta: { exportValue: (r) => r.scrap_volume_m3, className: "font-mono text-app-label-secondary" },
         cell: ({ row }) => (
           <>
             {Number(row.original.scrap_volume_m3).toFixed(3)} م³
@@ -81,6 +81,7 @@ export function useProductionBatchesColumns({
       {
         id: "status",
         header: "الحالة",
+        meta: { exportValue: (r) => STATUS_LABELS[r.status] ?? r.status },
         enableSorting: false,
         cell: ({ row }) => (
           <span className="px-2 py-1 text-xs font-semibold rounded-full bg-app-accent-subtle text-app-accent">
@@ -92,7 +93,7 @@ export function useProductionBatchesColumns({
         id: "actions",
         header: "الإجراءات",
         enableSorting: false,
-        meta: { align: "end" },
+        meta: { export: false, align: "end" },
         cell: ({ row }) => {
           const batch = row.original;
           const items: RowActionItem[] = [

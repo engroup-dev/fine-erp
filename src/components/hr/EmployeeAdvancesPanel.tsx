@@ -140,6 +140,7 @@ export const EmployeeAdvancesPanel: React.FC<EmployeeAdvancesPanelProps> = ({ em
 
   const columns = useEmployeeAdvancesColumns({ showEmployee: !employee, renderActions });
   const table = useDataTable({
+    exportFileName: "employee-advances",
     columns,
     data: advances,
     // Sorting and a global filter would only reach the loaded page.

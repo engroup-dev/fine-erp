@@ -28,6 +28,7 @@ export function useChartOfAccountsLedgerColumns(options?: {
       {
         id: "reference",
         header: "المرجع",
+        meta: { exportValue: (l) => l.journal_entry?.reference },
         cell: ({ row }) => (
           <div className="flex items-center gap-1.5">
             <span className="font-mono font-bold text-app-accent">
@@ -48,6 +49,7 @@ export function useChartOfAccountsLedgerColumns(options?: {
       {
         id: "date",
         header: "التاريخ",
+        meta: { exportValue: (l) => l.journal_entry?.entry_date },
         cell: ({ row }) => (
           <span className="font-mono text-xs text-app-label-secondary">
             {row.original.journal_entry?.entry_date ? formatDate(row.original.journal_entry.entry_date) : "—"}
@@ -57,6 +59,7 @@ export function useChartOfAccountsLedgerColumns(options?: {
       {
         id: "operating_unit",
         header: "الوحدة",
+        meta: { exportValue: (l) => l.operating_unit?.name ?? "عام الشركة" },
         cell: ({ row }) => (
           <span className="inline-block rounded-md bg-app-bg-secondary px-2 py-0.5 text-xs text-app-label-secondary">
             {row.original.operating_unit?.name ?? "عام الشركة"}
@@ -66,6 +69,7 @@ export function useChartOfAccountsLedgerColumns(options?: {
       {
         id: "description",
         header: "الوصف والبيان",
+        meta: { exportValue: (l) => { const desc = l.journal_entry?.description; return l.memo && l.memo !== desc ? `${desc ?? ""} — ${l.memo}` : desc; } },
         cell: ({ row }) => {
           const desc = row.original.journal_entry?.description;
           const memo = row.original.memo;
@@ -86,6 +90,7 @@ export function useChartOfAccountsLedgerColumns(options?: {
             {
               id: "currency",
               header: "العملة",
+              meta: { exportValue: (l: JournalLine) => l.currency },
               enableSorting: false,
               cell: ({ row }: { row: { original: JournalLine } }) => (
                 <span className="font-mono text-xs text-app-label-secondary">
@@ -97,7 +102,7 @@ export function useChartOfAccountsLedgerColumns(options?: {
               id: "original_amount",
               header: "المبلغ الأصلي",
               enableSorting: false,
-              meta: { align: "end" as const },
+              meta: { exportValue: (l: JournalLine) => (Number(l.original_amount) > 0 ? l.original_amount : null), align: "end" as const },
               cell: ({ row }: { row: { original: JournalLine } }) => {
                 const amount = row.original.original_amount ? Number(row.original.original_amount) : 0;
                 return (
@@ -111,7 +116,7 @@ export function useChartOfAccountsLedgerColumns(options?: {
               id: "fx_rate",
               header: "سعر الصرف",
               enableSorting: false,
-              meta: { align: "end" as const },
+              meta: { exportValue: (l: JournalLine) => (Number(l.fx_rate) > 0 ? l.fx_rate : null), align: "end" as const },
               cell: ({ row }: { row: { original: JournalLine } }) => {
                 const rate = row.original.fx_rate ? Number(row.original.fx_rate) : 0;
                 return (
@@ -127,7 +132,7 @@ export function useChartOfAccountsLedgerColumns(options?: {
         id: "debit",
         header: "مدين",
         enableSorting: false,
-        meta: { align: "end" },
+        meta: { exportValue: (l) => (Number(l.debit) > 0 ? l.debit : null), align: "end" },
         cell: ({ row }) => {
           const debit = Number(row.original.debit);
           return (
@@ -141,7 +146,7 @@ export function useChartOfAccountsLedgerColumns(options?: {
         id: "credit",
         header: "دائن",
         enableSorting: false,
-        meta: { align: "end" },
+        meta: { exportValue: (l) => (Number(l.credit) > 0 ? l.credit : null), align: "end" },
         cell: ({ row }) => {
           const credit = Number(row.original.credit);
           return (
@@ -155,7 +160,7 @@ export function useChartOfAccountsLedgerColumns(options?: {
         id: "running_balance",
         header: currency ? `الرصيد (${currency})` : "الرصيد",
         enableSorting: false,
-        meta: { align: "end" },
+        meta: { exportValue: (l) => l.running_balance, align: "end" },
         cell: ({ row }) =>
           row.original.running_balance === undefined ? null : <BalanceWithSide value={row.original.running_balance} />,
       },

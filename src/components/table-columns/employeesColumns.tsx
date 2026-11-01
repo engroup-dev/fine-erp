@@ -55,7 +55,7 @@ export function useEmployeesColumns(): ColumnDef<Employee, unknown>[] {
       {
         accessorKey: "pay_type",
         header: "طريقة الدفع",
-        meta: { className: "font-semibold text-app-label-secondary" },
+        meta: { exportValue: (e) => (e.pay_type === "monthly" ? "راتب شهري" : e.pay_type === "hourly" ? "أجر بالساعة" : e.pay_type === "daily" ? "أجر يومي" : "إنتاج/قطعة"), className: "font-semibold text-app-label-secondary" },
         cell: ({ row }) =>
           row.original.pay_type === "monthly"
             ? "راتب شهري"
@@ -69,7 +69,7 @@ export function useEmployeesColumns(): ColumnDef<Employee, unknown>[] {
         id: "pay_amount",
         header: "الراتب / الأجر",
         enableSorting: false,
-        meta: { className: "font-mono font-bold text-app-label-primary" },
+        meta: { exportValue: (e) => (e.pay_type === "monthly" ? e.monthly_salary : e.pay_type === "hourly" ? e.hourly_rate : e.pay_type === "daily" ? e.daily_rate : null), className: "font-mono font-bold text-app-label-primary" },
         cell: ({ row }) => {
           const emp = row.original;
           return emp.pay_type === "monthly" && emp.monthly_salary
@@ -84,6 +84,7 @@ export function useEmployeesColumns(): ColumnDef<Employee, unknown>[] {
       {
         accessorKey: "status",
         header: "الحالة",
+        meta: { exportValue: (e) => (e.status === "active" ? "نشط" : e.status === "terminated" ? "منتهي" : e.status) },
         cell: ({ row }) => (
           <span
             className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${

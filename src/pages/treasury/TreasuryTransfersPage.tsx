@@ -268,6 +268,7 @@ export const TreasuryTransfersPage: React.FC = () => {
       {
         id: "from_cash_account",
         header: "من",
+        meta: { exportValue: (t) => t.from_cash_account?.name },
         cell: ({ row }) => (
           <span className="text-xs font-medium text-app-label-primary">
             {row.original.from_cash_account?.name ?? "—"}
@@ -277,6 +278,7 @@ export const TreasuryTransfersPage: React.FC = () => {
       {
         id: "to_cash_account",
         header: "إلى",
+        meta: { exportValue: (t) => t.to_cash_account?.name },
         cell: ({ row }) => (
           <span className="text-xs font-medium text-app-label-primary">
             {row.original.to_cash_account?.name ?? "—"}
@@ -286,7 +288,7 @@ export const TreasuryTransfersPage: React.FC = () => {
       {
         id: "amount",
         header: "المبلغ",
-        meta: { align: "end" },
+        meta: { exportAs: [{ header: "المبلغ", value: (t) => Number(t.amount) }, { header: "العملة", value: (t) => t.currency }], align: "end" },
         cell: ({ row }) => {
           const t = row.original;
           const isNonLyd = t.currency !== "LYD" && t.currency !== "د.ل";
@@ -307,6 +309,7 @@ export const TreasuryTransfersPage: React.FC = () => {
       {
         id: "status",
         header: "الحالة",
+        meta: { exportValue: (t) => t.status_label || ({ draft: "بانتظار الاعتماد", approved: "معتمد", rejected: "مرفوض", cancelled: "ملغى" } as Record<string, string>)[t.status] || t.status },
         cell: ({ row }) => {
           const s = row.original.status;
           let badgeClass = "bg-app-fill-f2 text-app-label-tertiary";
@@ -341,6 +344,7 @@ export const TreasuryTransfersPage: React.FC = () => {
       {
         id: "decided_by",
         header: "المعتمد / الرافض",
+        meta: { exportValue: (t) => (t.decided_by ? [t.decided_by.name, t.decision_note].filter(Boolean).join(" — ") : null) },
         cell: ({ row }) => {
           const t = row.original;
           if (t.decided_by) {
@@ -366,6 +370,7 @@ export const TreasuryTransfersPage: React.FC = () => {
       {
         id: "journal_entry",
         header: "القيد",
+        meta: { exportValue: (t) => t.journal_entry?.reference },
         cell: ({ row }) => (
           <span className="whitespace-nowrap font-mono text-xs text-app-label-secondary">
             {row.original.journal_entry?.reference ?? "—"}
@@ -375,7 +380,7 @@ export const TreasuryTransfersPage: React.FC = () => {
       {
         id: "actions",
         header: "",
-        meta: { align: "end" },
+        meta: { export: false, align: "end" },
         cell: ({ row }) => {
           const t = row.original;
           if (t.status !== "draft") return null;
@@ -430,6 +435,7 @@ export const TreasuryTransfersPage: React.FC = () => {
   );
 
   const table = useDataTable({
+    exportFileName: "treasury-transfers",
     columns,
     data: transfers,
     enableSorting: false,

@@ -15,6 +15,7 @@ export function useWarehousesColumns(): ColumnDef<Warehouse, unknown>[] {
       {
         id: "type",
         header: "النوع",
+        meta: { exportValue: (r) => (r.is_internal_unit ? "مخزن داخلي" : "مخزن خارجي") },
         enableSorting: false,
         cell: ({ row }) => (
           <span className="px-2 py-1 text-xs font-semibold rounded-full bg-app-fill-f1 text-app-label-secondary">

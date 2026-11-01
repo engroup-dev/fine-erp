@@ -377,6 +377,7 @@ export const SuppliersPage: React.FC = () => {
   });
   const tableData = useMemo(() => suppliers, [suppliers]);
   const suppliersTable = useDataTable({
+    exportFileName: "suppliers",
     columns,
     data: tableData,
     enableSorting: true,

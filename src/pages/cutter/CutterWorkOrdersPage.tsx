@@ -20,7 +20,9 @@ import {
   CUTTER_STATUS_ORDER,
   CUTTER_STATUS_LABEL,
   CutterWorkOrderStatus,
+  cutterApi,
 } from "../../api/endpoints/cutter";
+import { fetchAllPages } from "../../lib/utils/fetchAllPages";
 import { apiErrorPayload } from "../../api/endpoints/production";
 import { formatNumber } from "../../lib/utils/format";
 import { SearchableSelect } from "../../components/ui/SearchableSelect";
@@ -32,6 +34,9 @@ export const CutterWorkOrdersPage: React.FC = () => {
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [internalOnly, setInternalOnly] = useState(false);
+  // Server paging: the endpoint returns 15 orders a page by default.
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(15);
   const [showForm, setShowForm] = useState(false);
   const [clientId, setClientId] = useState("");
   const [notes, setNotes] = useState("");
@@ -43,10 +48,15 @@ export const CutterWorkOrdersPage: React.FC = () => {
   const foamBlocks: AvailableFoamBlock[] = foamBlocksPage?.data ?? [];
   const selectedBlock = foamBlocks.find((b) => b.id === stockLotId);
 
-  const { data, isLoading, refetch } = useCutterOrders({
-    status: statusFilter || undefined,
-    internal_only: internalOnly || undefined,
-  });
+  const { data, isLoading, refetch } = useCutterOrders(
+    {
+      status: statusFilter || undefined,
+      internal_only: internalOnly || undefined,
+      page,
+      per_page: perPage,
+    },
+    { keepPrevious: true },
+  );
   const createMutation = useCreateCutterOrder();
 
   const orders = data?.data ?? [];
@@ -85,12 +95,34 @@ export const CutterWorkOrdersPage: React.FC = () => {
 
   const tableData = useMemo(() => orders, [orders]);
   const ordersTable = useDataTable({
+    exportFileName: "cutter-orders",
+    // Every page under the current filters, not just the one on screen.
+    fetchAllRowsForExport: () =>
+      fetchAllPages(async (p, size) =>
+        (
+          await cutterApi.getOrders({
+            status: statusFilter || undefined,
+            internal_only: internalOnly || undefined,
+            page: p,
+            per_page: size,
+          })
+        ).data,
+      ),
     columns,
     data: tableData,
     enableSorting: true,
     enableGlobalFilter: false,
-    pageSize: 10,
     getRowId: (o) => o.id,
+    serverPagination: {
+      page,
+      perPage,
+      total: data?.total ?? 0,
+      lastPage: data?.last_page ?? 1,
+      onChange: (p, size) => {
+        setPage(p);
+        setPerPage(size);
+      },
+    },
   });
 
   return (
@@ -136,7 +168,10 @@ export const CutterWorkOrdersPage: React.FC = () => {
       {/* Pipeline filter — the lifecycle doubles as the filter row */}
       <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-app-separator bg-app-bg-primary p-3 shadow-sm">
         <button
-          onClick={() => setStatusFilter("")}
+          onClick={() => {
+            setStatusFilter("");
+            setPage(1);
+          }}
           className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
             statusFilter === ""
               ? "bg-app-accent text-white"
@@ -148,7 +183,10 @@ export const CutterWorkOrdersPage: React.FC = () => {
         {CUTTER_STATUS_ORDER.map((s) => (
           <button
             key={s}
-            onClick={() => setStatusFilter(s)}
+            onClick={() => {
+              setStatusFilter(s);
+              setPage(1);
+            }}
             className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
               statusFilter === s
                 ? "bg-app-accent text-white"
@@ -163,7 +201,10 @@ export const CutterWorkOrdersPage: React.FC = () => {
           <input
             type="checkbox"
             checked={internalOnly}
-            onChange={(e) => setInternalOnly(e.target.checked)}
+            onChange={(e) => {
+              setInternalOnly(e.target.checked);
+              setPage(1);
+            }}
             className="accent-current"
           />
           الداخلية فقط

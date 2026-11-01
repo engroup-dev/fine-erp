@@ -52,6 +52,7 @@ export function useAttendanceRecordsColumns({
         id: "status",
         accessorKey: "status",
         header: "الحالة",
+        meta: { exportValue: (a) => ATTENDANCE_STATUS_LABEL[a.status] ?? a.status },
         cell: ({ row }) => {
           const status = row.original.status;
           const label = ATTENDANCE_STATUS_LABEL[status] ?? status;
@@ -94,7 +95,7 @@ export function useAttendanceRecordsColumns({
         id: "actions",
         header: "الإجراءات",
         enableSorting: false,
-        meta: { align: "end" },
+        meta: { export: false, align: "end" },
         cell: ({ row }) => (
           <div className="flex items-center justify-end gap-1.5">
             <button

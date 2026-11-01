@@ -70,6 +70,7 @@ export const PayablesPanel: React.FC = () => {
   const settlementColumns = usePayablesSettlementsColumns();
   const settlementTableData = useMemo(() => settlements, [settlements]);
   const settlementTable = useDataTable({
+    exportFileName: "payable-settlements",
     columns: settlementColumns,
     data: settlementTableData,
     enableSorting: true,

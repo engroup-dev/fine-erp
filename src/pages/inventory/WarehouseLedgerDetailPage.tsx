@@ -21,6 +21,7 @@ const WarehouseLedgerDetailPage: React.FC = () => {
   const itemColumns = useWarehouseStockSummaryColumns();
   const itemRows = useMemo(() => summary?.rows ?? [], [summary]);
   const itemsTable = useDataTable({
+    exportFileName: "warehouse-stock",
     columns: itemColumns,
     data: itemRows,
     enableSorting: true,
@@ -31,6 +32,7 @@ const WarehouseLedgerDetailPage: React.FC = () => {
   const movementColumns = useInventoryMovementColumns();
   const movementRows = useMemo(() => ledger?.data ?? [], [ledger]);
   const historyTable = useDataTable({
+    exportFileName: "warehouse-movements",
     columns: movementColumns,
     data: movementRows,
     enableSorting: true,

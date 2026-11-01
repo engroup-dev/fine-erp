@@ -9,6 +9,7 @@ export function useWarehouseStockSummaryColumns(): ColumnDef<WarehouseStockSumma
       {
         id: "item",
         header: "الصنف",
+        meta: { exportValue: (r) => `${r.item_code} — ${r.item_name}` },
         cell: ({ row }) => (
           <div>
             <div className="font-medium text-app-label-primary">{row.original.item_name}</div>
@@ -19,25 +20,25 @@ export function useWarehouseStockSummaryColumns(): ColumnDef<WarehouseStockSumma
       {
         id: "total_quantity",
         header: "الكمية المتاحة",
-        meta: { className: "font-mono text-app-label-primary" },
+        meta: { exportValue: (r) => r.total_quantity, className: "font-mono text-app-label-primary" },
         cell: ({ row }) => `${formatNumber(row.original.total_quantity)} ${row.original.uom}`,
       },
       {
         id: "avg_unit_cost",
         header: "متوسط سعر الوحدة",
-        meta: { className: "font-mono font-bold text-app-accent" },
+        meta: { exportValue: (r) => r.avg_unit_cost, className: "font-mono font-bold text-app-accent" },
         cell: ({ row }) => `${formatNumber(row.original.avg_unit_cost)} LYD`,
       },
       {
         id: "total_value",
         header: "القيمة الإجمالية",
-        meta: { className: "font-mono text-app-label-primary" },
+        meta: { exportValue: (r) => r.total_value, className: "font-mono text-app-label-primary" },
         cell: ({ row }) => `${formatNumber(row.original.total_value)} LYD`,
       },
       {
         id: "lots_count",
         header: "عدد الدفعات",
-        meta: { align: "center", className: "font-mono text-app-label-secondary" },
+        meta: { exportValue: (r) => r.lots_count, align: "center", className: "font-mono text-app-label-secondary" },
         cell: ({ row }) => row.original.lots_count,
       },
     ],

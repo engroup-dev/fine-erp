@@ -20,6 +20,7 @@ export const CategoryAttributeManagerPage: React.FC = () => {
 
   const tableData = useMemo(() => categories ?? [], [categories]);
   const table = useDataTable({
+    exportFileName: "item-categories",
     columns,
     data: tableData,
     enableSorting: true,

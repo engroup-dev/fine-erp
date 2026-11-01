@@ -298,6 +298,7 @@ export const ClientDetailPage: React.FC = () => {
   const columns = useSalesColumns({ onOpen: (sale: Sale) => navigate(`/sales/${sale.id}`) });
   const rows = useMemo(() => salesPage?.data ?? [], [salesPage]);
   const table = useDataTable({
+    exportFileName: "client-sales",
     columns,
     data: rows,
     enableSorting: false,

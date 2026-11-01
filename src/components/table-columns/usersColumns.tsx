@@ -30,6 +30,7 @@ export function useUsersColumns({
       {
         id: "user",
         header: "المستخدم",
+        meta: { exportValue: (u) => [u.name, u.email, u.phone].filter(Boolean).join(" — ") },
         accessorFn: (u) =>
           [u.name, u.email, u.phone, ...(u.roles?.map((r) => r.name) ?? [])].filter(Boolean).join(" "),
         cell: ({ row }) => (
@@ -56,6 +57,7 @@ export function useUsersColumns({
       {
         id: "roles",
         header: "الأدوار",
+        meta: { exportValue: (u) => (u.roles ?? []).map((r) => `${r.name} · ${unitName(r.pivot?.operating_unit_id ?? null)}`).join("، ") },
         enableSorting: false,
         cell: ({ row }) => (
           <div className="flex flex-wrap gap-1.5">
@@ -80,6 +82,7 @@ export function useUsersColumns({
       {
         id: "status",
         header: "الحالة",
+        meta: { exportValue: (u) => (u.is_active ? "مفعل" : "معطل") },
         accessorFn: (u) => u.is_active,
         cell: ({ row }) => (
           <>
@@ -104,7 +107,7 @@ export function useUsersColumns({
         id: "actions",
         header: "",
         enableSorting: false,
-        meta: { align: "end" },
+        meta: { export: false, align: "end" },
         cell: ({ row }) => {
           const u = row.original;
           if (u.deleted_at) {

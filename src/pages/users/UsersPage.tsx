@@ -226,6 +226,7 @@ const UsersPage: React.FC = () => {
 
   const tableData = useMemo(() => users ?? [], [users]);
   const usersTable = useDataTable({
+    exportFileName: "users",
     columns,
     data: tableData,
     enableSorting: true,

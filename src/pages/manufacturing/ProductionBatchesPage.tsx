@@ -20,7 +20,9 @@ import {
   LEDGER_ERROR_MESSAGE,
   MAX_BUN_WIDTH_M,
   NonSequentialOperationError,
+  productionApi,
 } from "../../api/endpoints/production";
+import { fetchAllPages } from "../../lib/utils/fetchAllPages";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose, DialogBody, DialogFooter } from "../../components/ui/Dialog";
 import { DataTable, useDataTable } from "../../components/ui/DataTable";
 import { useProductionBatchesColumns } from "../../components/table-columns/productionBatchesColumns";
@@ -46,7 +48,16 @@ export const ProductionBatchesPage: React.FC = () => {
   const [editingBatch, setEditingBatch] = useState<ProductionBatch | null>(null);
   const [editForm, setEditForm] = useState(emptyForm);
 
-  const { data, isLoading, refetch } = useProductionBatches();
+  // Server paging: the endpoint returns 15 batches a page by default.
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(15);
+  const { data, isLoading, refetch } = useProductionBatches(
+    { page, per_page: perPage },
+    { keepPrevious: true },
+  );
+  // The list runs newest operation first, so the first row of page 1 holds the
+  // latest number — read it on its own, whichever page is on screen.
+  const { data: latestBatch, refetch: refetchLatestBatch } = useProductionBatches({ page: 1, per_page: 1 });
   const createMutation = useCreateProductionBatch();
   const updateMutation = useUpdateProductionBatch();
   const deleteMutation = useDeleteProductionBatch();
@@ -66,7 +77,7 @@ export const ProductionBatchesPage: React.FC = () => {
   const editDetailBlocked = Boolean(editingBatch) && (editingDetailLoading || editingDetailError || !editingDetail);
 
   const batches = data?.data ?? [];
-  const expected = expectedOperationNumber(batches);
+  const expected = expectedOperationNumber(latestBatch?.data);
 
   const buildPayload = (confirm = false): CreateBatchInput => ({
     operation_number: Number(form.operation_number),
@@ -222,12 +233,27 @@ export const ProductionBatchesPage: React.FC = () => {
 
   const tableData = useMemo(() => batches, [batches]);
   const batchesTable = useDataTable({
+    exportFileName: "production-batches",
+    // Every batch, not just the page on screen (a search typed in exports its matches only).
+    fetchAllRowsForExport: () =>
+      fetchAllPages(async (p, size) =>
+        (await productionApi.getBatches({ page: p, per_page: size })).data,
+      ),
     columns,
     data: tableData,
     enableSorting: true,
     enableGlobalFilter: true,
-    pageSize: 10,
     getRowId: (b) => b.id,
+    serverPagination: {
+      page,
+      perPage,
+      total: data?.total ?? 0,
+      lastPage: data?.last_page ?? 1,
+      onChange: (p, size) => {
+        setPage(p);
+        setPerPage(size);
+      },
+    },
   });
 
   return (
@@ -245,7 +271,11 @@ export const ProductionBatchesPage: React.FC = () => {
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => refetch()}
+            onClick={() => {
+              // The last-operation hint reads a separate one-row query; refresh it with the list.
+              refetch();
+              refetchLatestBatch();
+            }}
             className="flex items-center gap-1.5 rounded-xl border border-app-separator bg-app-bg-secondary px-3 py-2 text-xs font-semibold text-app-label-primary hover:bg-app-fill-f1 transition-colors"
           >
             <RefreshCw className="w-4 h-4" /> تحديث
@@ -274,7 +304,7 @@ export const ProductionBatchesPage: React.FC = () => {
       <DataTable table={batchesTable}>
         <DataTable.Header>
           <DataTable.Toolbar>
-            <DataTable.SearchInput placeholder="بحث برقم العملية أو الحالة..." />
+            <DataTable.SearchInput placeholder="بحث في هذه الصفحة برقم العملية أو الحالة..." />
           </DataTable.Toolbar>
         </DataTable.Header>
         <DataTable.Content
