@@ -28,7 +28,12 @@ interface TreasuryAccountsGridProps {
 export const TreasuryAccountsGrid: React.FC<TreasuryAccountsGridProps> = ({ kind }) => {
   const { data: cashAccounts = [] } = useCashAccounts();
   const accounts = useMemo(() => cashAccounts.filter((a) => a.kind === kind), [cashAccounts, kind]);
-  const totalLyd = useMemo(() => accounts.reduce((sum, a) => sum + (a.ledger_balance ?? 0), 0), [accounts]);
+  // A ledger balance belongs to the account, so treasuries sharing one count it once.
+  const totalLyd = useMemo(() => {
+    const byLedgerAccount = new Map<string, number>();
+    accounts.forEach((a) => byLedgerAccount.set(a.account_id ?? a.id, a.ledger_balance ?? 0));
+    return [...byLedgerAccount.values()].reduce((sum, balance) => sum + balance, 0);
+  }, [accounts]);
 
   const [dialog, setDialog] = useState<{ open: boolean; account: CashAccount | null }>({
     open: false,
