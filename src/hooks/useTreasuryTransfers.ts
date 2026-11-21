@@ -11,6 +11,7 @@ import {
   type ApproveTreasuryTransferPayload,
   type RejectTreasuryTransferPayload,
 } from "../api/endpoints/treasuryTransfers";
+import { useIsCompanyWide } from "./useAccounting";
 
 const ACCOUNTING_QUERY_KEYS = [
   "journalEntries",
@@ -24,10 +25,16 @@ const ACCOUNTING_QUERY_KEYS = [
   "unitProfitability",
 ] as const;
 
-export function useTreasuryTransfers(filters?: TreasuryTransferFilters) {
+/**
+ * A company-wide approver (owner, accounting manager) must see pending
+ * transfers from every unit, not only the unit pinned in the top bar.
+ */
+export function useTreasuryTransfers(filters?: Omit<TreasuryTransferFilters, "company_wide">) {
+  const companyWide = useIsCompanyWide();
   return useQuery({
-    queryKey: ["treasuryTransfers", filters],
-    queryFn: () => getTreasuryTransfers(filters),
+    queryKey: ["treasuryTransfers", filters, companyWide],
+    queryFn: () =>
+      getTreasuryTransfers(companyWide ? { ...filters, company_wide: 1 } : filters),
   });
 }
 

@@ -499,6 +499,8 @@ export const TreasuryTransfersPage: React.FC = () => {
               const canApprove = canApproveTransfer(t);
               const canReject = canRejectTransfer(t);
               const canCancel = canCancelTransfer(t);
+              const awaitsSomeoneElse =
+                !canApprove && String(t.created_by?.id) === String(currentUserId);
               const isNonLyd = t.currency !== "LYD" && t.currency !== "د.ل";
 
               return (
@@ -563,6 +565,16 @@ export const TreasuryTransfersPage: React.FC = () => {
                       </strong>
                     </div>
                   </div>
+
+                  {awaitsSomeoneElse && (
+                    <div className="flex items-start gap-1.5 rounded-lg bg-app-status-warning/10 px-2.5 py-1.5 text-[11px] text-app-status-warning">
+                      <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                      <span>
+                        <strong>بانتظار اعتماد مستخدم آخر.</strong> لا يمكن اعتماد تحويل أنشأته
+                        بنفسك؛ يعتمده المالك أو مدير الحسابات أو أمين خزينة آخر.
+                      </span>
+                    </div>
+                  )}
 
                   {/* Action Buttons */}
                   <div className="flex items-center justify-end gap-1.5 pt-1 border-t border-app-separator/40">

@@ -63,6 +63,8 @@ export interface TreasuryTransferFilters {
   search?: string;
   page?: number;
   per_page?: number;
+  /** Company-wide roles only: list every unit's transfers, not just the pinned one. */
+  company_wide?: 1;
 }
 
 export interface CreateTreasuryTransferPayload {

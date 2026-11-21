@@ -354,7 +354,7 @@ export const TreasuryTransferDialog: React.FC<TreasuryTransferDialogProps> = ({
               }
               className="flex items-center gap-1.5 px-5 py-2 text-xs font-bold text-white bg-app-accent hover:opacity-90 rounded-xl disabled:opacity-50"
             >
-              {createMutation.isPending ? "جارٍ الحفظ…" : "حفظ كمسودة"}
+              {createMutation.isPending ? "جارٍ الحفظ…" : "حفظ وإرسال للاعتماد"}
             </button>
           </DialogFooter>
         </form>
