@@ -3,6 +3,9 @@ import type { Account } from "../../api/endpoints/accounting";
 /** 121 الأموال الجاهزة والنقدية — treasuries and banks (backend `AccountTree::subtreeIds('121')`). */
 export const TREASURY_ROOT_CODE = "121";
 
+/** CR 8: bank accounts live under 1212; a cash box is never linked there. */
+export const BANK_ROOT_CODE = "1212";
+
 /** 1215 سلف الموظفين — lines in this subtree carry the employee (backend `EmployeeAdvanceAccounts`). */
 export const EMPLOYEE_ADVANCES_ROOT_CODE = "1215";
 

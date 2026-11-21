@@ -46,7 +46,7 @@ export const categoryGroups: CategoryGroup[] = [
     description: "تتبع أوامر الشراء المحلية والخارجية، وحجوزات المصارف، وأسعار الصرف وتكاليف التوريد",
     icon: Package,
     path: "/hub/procurement",
-    itemIds: ["import-orders", "treasury", "treasury-vouchers", "treasury-transfers", "bank-reconciliation", "cheques"],
+    itemIds: ["import-orders", "treasury", "treasury-cash", "treasury-banks", "treasury-vouchers", "treasury-transfers", "bank-reconciliation", "cheques"],
     get items() {
       return findItems(this.itemIds);
     },

@@ -52,6 +52,7 @@ import {
 import { SuppliersPage } from "./procurement/SuppliersPage";
 import { PurchaseOrdersPage } from "./procurement/PurchaseOrdersPage";
 import { TreasuryPage } from "./treasury/TreasuryPage";
+import { TreasuryAccountsPage } from "./treasury/TreasuryAccountsPage";
 import { TreasuryVouchersPage } from "./treasury/TreasuryVouchersPage";
 import { TreasuryTransfersPage } from "./treasury/TreasuryTransfersPage";
 import { BankReconciliationPage } from "./treasury/BankReconciliationPage";
@@ -186,6 +187,22 @@ const App = () => {
               element={
                 <AuthorizedRoute allowedRoles={ALL_MANAGER_ROLES}>
                   <TreasuryPage />
+                </AuthorizedRoute>
+              }
+            />
+            <Route
+              path="treasury/cash"
+              element={
+                <AuthorizedRoute allowedRoles={ALL_MANAGER_ROLES}>
+                  <TreasuryAccountsPage kind="cash" />
+                </AuthorizedRoute>
+              }
+            />
+            <Route
+              path="treasury/banks"
+              element={
+                <AuthorizedRoute allowedRoles={ALL_MANAGER_ROLES}>
+                  <TreasuryAccountsPage kind="bank" />
                 </AuthorizedRoute>
               }
             />

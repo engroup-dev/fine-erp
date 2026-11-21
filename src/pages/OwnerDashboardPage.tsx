@@ -140,6 +140,8 @@ export const OwnerDashboardPage: React.FC = () => {
           icon={<Wallet className="w-4 h-4 text-app-accent" />}
           label="النقدية"
           value={formatNumber(kpis.data?.cash_position ?? 0)}
+          sub={`خزائن ${formatNumber(kpis.data?.cash_position_cash ?? 0)} · مصارف ${formatNumber(kpis.data?.cash_position_banks ?? 0)}`}
+          onClick={() => navigate("/treasury")}
         />
         <KpiCard
           icon={<Globe2 className="w-4 h-4 text-app-accent" />}

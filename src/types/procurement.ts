@@ -286,8 +286,10 @@ export interface CashAccount {
   account_id: string | null;
   account?: { id: string; account_code: string; name: string } | null;
   currency: string;
-  /** creation-time opening figure; not the balance */
+  /** opening figure; the live balance is ledger_balance */
   balance: number;
+  /** Whether the opening balance has been posted to the ledger (it can be set once until then). */
+  has_opening_entry?: boolean;
   ledger_balance: number;
   currency_balances?: Array<{ currency: string; original_balance: number; lyd_balance: number }>;
   created_at?: string;
@@ -419,11 +421,16 @@ export interface CreateCashAccountPayload {
   kind?: CashAccountKind;
   account_id?: string | null;
   currency?: string;
+  /** Opening balance, posted against equity 34 when the treasury is linked. */
   balance?: number;
+  opening_date?: string;
 }
 
 export interface UpdateCashAccountPayload {
   name?: string;
   kind?: CashAccountKind;
   account_id?: string | null;
+  /** Accepted once, until the opening entry is posted (OPENING_ALREADY_POSTED after). */
+  opening_balance?: number;
+  opening_date?: string;
 }

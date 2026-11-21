@@ -7,6 +7,9 @@ export interface DashboardKpis {
   gross_margin_pct: number | null;
   net_profit_mtd: number;
   cash_position: number;
+  /** CR 8: the same total split into cash boxes and banks (1212). */
+  cash_position_cash?: number;
+  cash_position_banks?: number;
   fx_exposure: Record<string, number>;
   pending_approvals: {
     credit: number;

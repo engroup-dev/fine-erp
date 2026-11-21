@@ -7,13 +7,9 @@ import {
   ShieldAlert,
   Send,
   AlertTriangle,
-  Landmark,
-  Pencil,
-  FileText,
 } from "lucide-react";
 import { isAxiosError } from "axios";
 import {
-  CashAccount,
   PaymentRequest,
   PaymentRoute,
   CreateFxRatePayload,
@@ -42,8 +38,7 @@ import { useTreasuryFxRatesColumns } from "../../components/table-columns/treasu
 import { useTreasuryBankHoldsColumns } from "../../components/table-columns/treasuryBankHoldsColumns";
 import { useBlackMarketColumns } from "../../components/table-columns/blackMarketColumns";
 import { FxPreviewCard } from "../../components/treasury/FxPreviewCard";
-import { CashAccountDialog } from "../../components/treasury/CashAccountDialog";
-import { CashAccountStatementDialog } from "../../components/treasury/CashAccountStatementDialog";
+import { TreasuryAccountsGrid } from "../../components/treasury/TreasuryAccountsGrid";
 import { useAccounts } from "../../hooks/useAccounting";
 import { filterPaymentSourceAccounts } from "../../lib/utils/coa";
 import { type Account } from "../../api/endpoints/accounting";
@@ -54,7 +49,7 @@ const FX_HARD_CAP_PERCENT_DEFAULT = 5.0;
 type RouteTab = "all" | "bank" | "market";
 
 export const TreasuryPage: React.FC = () => {
-  const { data: cashAccounts = [], isLoading: isLoadingCash, refetch: refetchCash } = useCashAccounts();
+  const { isLoading: isLoadingCash, refetch: refetchCash } = useCashAccounts();
   const { data: fxRates = [], isLoading: isLoadingFx, refetch: refetchFx } = useFxRates();
   const { data: bankHolds = [], isLoading: isLoadingHolds, refetch: refetchHolds } = useBankHolds();
   const { data: pendingPayments = [], isLoading: isLoadingPayments, refetch: refetchPayments } = usePaymentRequests({ status: "pending" });
@@ -68,11 +63,6 @@ export const TreasuryPage: React.FC = () => {
   const isLoading = isLoadingCash || isLoadingFx || isLoadingHolds || isLoadingPayments;
 
   const [activeRouteTab, setActiveRouteTab] = useState<RouteTab>("all");
-  const [cashAccountDialog, setCashAccountDialog] = useState<{ open: boolean; account: CashAccount | null }>({
-    open: false,
-    account: null,
-  });
-  const [statementAccount, setStatementAccount] = useState<CashAccount | null>(null);
 
   const handleRefreshAll = () => {
     refetchCash();
@@ -305,97 +295,9 @@ export const TreasuryPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Cash Accounts Cards Grid */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold text-app-label-primary">الخزائن والحسابات المصرفية</h3>
-        <button
-          onClick={() => setCashAccountDialog({ open: true, account: null })}
-          className="flex items-center gap-1.5 rounded-xl border border-app-accent/40 bg-app-accent/10 px-3 py-1.5 text-xs font-bold text-app-accent hover:bg-app-accent/15"
-        >
-          <Plus className="h-4 w-4" />
-          <span>إضافة خزينة</span>
-        </button>
-      </div>
-      <div className="grid grid-cols-3 gap-4">
-        {cashAccounts.length === 0 ? (
-          <div className="col-span-3 rounded-2xl border border-dashed border-app-separator bg-app-bg-primary p-4 text-center text-xs text-app-label-secondary">
-            لا توجد حسابات خزينة مسجلة حتى الآن.
-          </div>
-        ) : (
-          cashAccounts.map((acc) => {
-            const isLyd = !acc.currency || acc.currency === "LYD" || acc.currency === "د.ل";
-            const matchingCur = acc.currency_balances?.find((cb) => cb.currency === acc.currency);
-            const originalBalance = matchingCur ? matchingCur.original_balance : 0;
-            const mainBalance = isLyd ? acc.ledger_balance : originalBalance;
-            const isNegative = mainBalance < 0;
-
-            return (
-              <div key={acc.id} className="rounded-2xl border border-app-separator bg-app-bg-primary p-4 shadow-sm space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="flex items-center gap-1.5 text-xs font-bold text-app-label-secondary">
-                    {acc.kind === "bank" ? <Landmark className="h-3.5 w-3.5" /> : <Wallet className="h-3.5 w-3.5" />}
-                    {acc.name}
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="rounded-md bg-app-bg-secondary px-2 py-0.5 text-[10px] font-bold text-app-label-primary">
-                      {acc.currency}
-                    </span>
-                    <button
-                      onClick={() => setCashAccountDialog({ open: true, account: acc })}
-                      className="rounded-md p-1 text-app-label-tertiary hover:bg-app-fill-f1 hover:text-app-accent"
-                      title="تعديل"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                </div>
-                <div>
-                  <p className={`text-lg font-extrabold font-mono ${isNegative ? "text-app-status-danger" : "text-app-status-positive"}`}>
-                    {formatNumber(mainBalance)} {acc.currency}
-                  </p>
-                  {!isLyd && (
-                    <p className="text-[11px] font-mono text-app-label-tertiary">
-                      يعادل {formatNumber(acc.ledger_balance)} د.ل
-                    </p>
-                  )}
-                </div>
-                {acc.account ? (
-                  <div className="flex items-center justify-between gap-2 pt-1 border-t border-app-separator/50">
-                    <p className="text-[11px] font-mono text-app-label-tertiary truncate" title={`${acc.account.account_code} — ${acc.account.name}`}>
-                      {acc.account.account_code} — {acc.account.name}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => setStatementAccount(acc)}
-                      className="inline-flex items-center gap-1 rounded-lg border border-app-separator bg-app-bg-secondary px-2 py-0.5 text-[11px] font-semibold text-app-label-secondary hover:bg-app-fill-f1 hover:text-app-accent shrink-0 transition-colors"
-                    >
-                      <FileText className="h-3 w-3" />
-                      <span>كشف الخزينة</span>
-                    </button>
-                  </div>
-                ) : (
-                  <p className="flex items-center gap-1 text-[11px] font-semibold text-app-status-warning">
-                    <AlertTriangle className="h-3 w-3" />
-                    غير مربوطة بحساب محاسبي — لا تستقبل مبيعات
-                  </p>
-                )}
-              </div>
-            );
-          })
-        )}
-      </div>
-
-      <CashAccountDialog
-        open={cashAccountDialog.open}
-        cashAccount={cashAccountDialog.account}
-        onClose={() => setCashAccountDialog({ open: false, account: null })}
-      />
-
-      <CashAccountStatementDialog
-        open={statementAccount !== null}
-        cashAccount={statementAccount}
-        onClose={() => setStatementAccount(null)}
-      />
+      {/* CR 8: cash boxes and banks are listed apart */}
+      <TreasuryAccountsGrid kind="cash" />
+      <TreasuryAccountsGrid kind="bank" />
 
       {/* Two Column Layout: Pending Payments & FX Rates */}
       <div className="grid grid-cols-2 gap-6">

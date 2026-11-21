@@ -1,6 +1,6 @@
 import React from "react";
 import { useTreasuryOptions } from "../../hooks/useProcurement";
-import type { CashAccountKind } from "../../types/procurement";
+import type { CashAccountKind, TreasuryOption } from "../../types/procurement";
 import { formatNumber } from "../../lib/utils/format";
 
 interface TreasurySelectProps {
@@ -16,6 +16,21 @@ interface TreasurySelectProps {
 }
 
 const isLydTreasury = (currency?: string | null): boolean => !currency || currency === "LYD" || currency === "د.ل";
+
+const GROUPS: { kind: CashAccountKind; label: string }[] = [
+  { kind: "cash", label: "خزائن نقدية" },
+  { kind: "bank", label: "مصارف" },
+];
+
+const renderOption = (t: TreasuryOption) => {
+  const isLyd = isLydTreasury(t.currency);
+  const label = isLyd ? `${t.name} — ${formatNumber(t.ledger_balance)}` : `${t.name} — ${t.account_code}`;
+  return (
+    <option key={t.id} value={t.id}>
+      {label}
+    </option>
+  );
+};
 
 /**
  * The treasury or bank account money leaves from or goes into. Every cash
@@ -47,15 +62,17 @@ export const TreasurySelect: React.FC<TreasurySelectProps> = ({
         className="w-full rounded-xl border border-app-separator bg-app-bg-secondary px-3 py-2 text-sm focus:border-app-accent focus:outline-none"
       >
         <option value="">{isLoading ? "جارٍ التحميل…" : "اختر…"}</option>
-        {treasuries.map((t) => {
-          const isLyd = isLydTreasury(t.currency);
-          const label = isLyd ? `${t.name} — ${formatNumber(t.ledger_balance)}` : `${t.name} — ${t.account_code}`;
-          return (
-            <option key={t.id} value={t.id}>
-              {label}
-            </option>
-          );
-        })}
+        {kind
+          ? treasuries.map(renderOption)
+          : // CR 8: cash boxes and banks are listed apart wherever both are allowed.
+            GROUPS.map((group) => {
+              const items = treasuries.filter((t) => (t.kind ?? "cash") === group.kind);
+              return items.length > 0 ? (
+                <optgroup key={group.kind} label={group.label}>
+                  {items.map(renderOption)}
+                </optgroup>
+              ) : null;
+            })}
       </select>
       {!isLoading && treasuries.length === 0 && (
         <p className="text-[11px] text-app-status-yellow">

@@ -4,6 +4,7 @@ import { INSTALLMENT_PERMISSION, INSTALLMENT_ROLES } from "../api/endpoints/inst
 import {
   BadgeDollarSign,
   Banknote,
+  Landmark,
   BarChart3,
   BookOpenText,
   Boxes,
@@ -205,6 +206,8 @@ export const navItems: AppNavItem[] = [
   { id: "suppliers", path: "/suppliers", label: "الموردون", icon: Truck, allowedRoles: ALL_MANAGER_ROLES, permission: "view-procurement" },
   { id: "import-orders", path: "/import-orders", label: "مشتريات", icon: Package, allowedRoles: ALL_MANAGER_ROLES, permission: "view-procurement" },
   { id: "treasury", path: "/treasury", label: "الخزينة وسعر الصرف", icon: Wallet, allowedRoles: ALL_MANAGER_ROLES, permission: "view-treasury" },
+  { id: "treasury-cash", path: "/treasury/cash", label: "الخزائن النقدية", icon: Banknote, allowedRoles: ALL_MANAGER_ROLES, permission: "view-treasury" },
+  { id: "treasury-banks", path: "/treasury/banks", label: "الحسابات المصرفية", icon: Landmark, allowedRoles: ALL_MANAGER_ROLES, permission: "view-treasury" },
   { id: "treasury-vouchers", path: "/treasury/vouchers", label: "سندات القبض والصرف", icon: Receipt, allowedRoles: ALL_MANAGER_ROLES, permission: "view-treasury" },
   { id: "treasury-transfers", path: "/treasury/transfers", label: "التحويلات بين الخزائن", icon: ArrowLeftRight, allowedRoles: ALL_MANAGER_ROLES, permission: "view-treasury" },
   { id: "bank-reconciliation", path: "/treasury/reconciliation", label: "التسوية المصرفية", icon: ListChecks, allowedRoles: ALL_MANAGER_ROLES, permission: "view-treasury" },
