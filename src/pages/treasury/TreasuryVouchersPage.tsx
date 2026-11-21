@@ -547,7 +547,7 @@ export const TreasuryVouchersPage: React.FC = () => {
               <DialogClose />
             </DialogHeader>
 
-            <form onSubmit={handleConfirmCancel}>
+            <form onSubmit={handleConfirmCancel} className="flex min-h-0 flex-1 flex-col">
               <DialogBody className="space-y-3">
                 {/* Warning Alert */}
                 <div className="flex items-start gap-2.5 rounded-xl border border-app-status-yellow/30 bg-app-status-yellow/10 p-3 text-xs text-app-status-yellow">

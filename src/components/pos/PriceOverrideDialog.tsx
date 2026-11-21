@@ -100,7 +100,7 @@ export const PriceOverrideDialog: React.FC<PriceOverrideDialogProps> = ({
           <DialogClose />
         </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <DialogBody className="space-y-4">
             <div className="flex items-start gap-2.5 rounded-xl border border-app-status-warning/40 bg-app-status-warning/10 p-3 text-xs text-app-label-primary">
               <AlertTriangle className="h-4 w-4 text-app-status-warning shrink-0 mt-0.5" />

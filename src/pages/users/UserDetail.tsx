@@ -795,7 +795,7 @@ const UserDetail: React.FC = () => {
             </DialogDescription>
             <DialogClose />
           </DialogHeader>
-          <form onSubmit={submitEdit}>
+          <form onSubmit={submitEdit} className="flex min-h-0 flex-1 flex-col">
             <DialogBody className="space-y-3">
               {editError && (
                 <div className="rounded-xl border border-app-status-danger/30 bg-app-status-danger/10 p-2.5 text-xs text-app-status-danger">
@@ -905,7 +905,7 @@ const UserDetail: React.FC = () => {
             </DialogDescription>
             <DialogClose />
           </DialogHeader>
-          <form onSubmit={submitAssignRole}>
+          <form onSubmit={submitAssignRole} className="flex min-h-0 flex-1 flex-col">
             <DialogBody className="space-y-4">
               {assignError && (
                 <div className="rounded-xl border border-app-status-danger/30 bg-app-status-danger/10 p-2.5 text-xs text-app-status-danger">

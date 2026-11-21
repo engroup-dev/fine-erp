@@ -234,7 +234,7 @@ export const ChequeActionDialog: React.FC<ChequeActionDialogProps> = ({
           <DialogClose />
         </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <DialogBody className="space-y-4">
             {/* Cheque Summary Card */}
             <div className="rounded-xl border border-app-separator bg-app-bg-secondary/70 p-3 space-y-1.5 text-xs">

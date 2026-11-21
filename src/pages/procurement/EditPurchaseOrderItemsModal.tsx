@@ -157,7 +157,7 @@ export const EditPurchaseOrderItemsModal: React.FC<EditPurchaseOrderItemsModalPr
           <DialogClose />
         </DialogHeader>
 
-        <form onSubmit={handleSave}>
+        <form onSubmit={handleSave} className="flex min-h-0 flex-1 flex-col">
           <DialogBody className="space-y-4">
             {/* Filter pills */}
             <div className="flex flex-wrap items-center gap-1.5">

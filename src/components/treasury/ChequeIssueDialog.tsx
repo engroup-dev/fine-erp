@@ -171,7 +171,7 @@ export const ChequeIssueDialog: React.FC<ChequeIssueDialogProps> = ({
           <DialogClose />
         </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <DialogBody className="space-y-4">
             {error && (
               <div className="rounded-xl border border-app-status-danger/30 bg-app-status-danger/10 p-3 text-xs font-semibold text-app-status-danger">

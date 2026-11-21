@@ -763,7 +763,7 @@ export const TreasuryTransfersPage: React.FC = () => {
               <DialogClose />
             </DialogHeader>
 
-            <form onSubmit={handleConfirmApprove}>
+            <form onSubmit={handleConfirmApprove} className="flex min-h-0 flex-1 flex-col">
               <DialogBody className="space-y-4">
                 {approveError && (
                   <div className="rounded-xl border border-app-status-danger/30 bg-app-status-danger/10 p-2.5 text-xs font-semibold text-app-status-danger">
@@ -898,7 +898,7 @@ export const TreasuryTransfersPage: React.FC = () => {
               <DialogClose />
             </DialogHeader>
 
-            <form onSubmit={handleConfirmReject}>
+            <form onSubmit={handleConfirmReject} className="flex min-h-0 flex-1 flex-col">
               <DialogBody className="space-y-3">
                 {rejectError && (
                   <div className="rounded-xl border border-app-status-danger/30 bg-app-status-danger/10 p-2.5 text-xs font-semibold text-app-status-danger">
@@ -959,7 +959,7 @@ export const TreasuryTransfersPage: React.FC = () => {
               <DialogClose />
             </DialogHeader>
 
-            <form onSubmit={handleConfirmCancel}>
+            <form onSubmit={handleConfirmCancel} className="flex min-h-0 flex-1 flex-col">
               <DialogBody className="space-y-3">
                 {cancelError && (
                   <div className="rounded-xl border border-app-status-danger/30 bg-app-status-danger/10 p-2.5 text-xs font-semibold text-app-status-danger">

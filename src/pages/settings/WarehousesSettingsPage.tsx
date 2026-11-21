@@ -320,7 +320,7 @@ export const WarehousesSettingsPage: React.FC = () => {
           <DialogHeader>
             <DialogTitle>إضافة مخزن جديد</DialogTitle>
           </DialogHeader>
-          <form onSubmit={submitAdd}>
+          <form onSubmit={submitAdd} className="flex min-h-0 flex-1 flex-col">
             <DialogBody className="space-y-4 py-2">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-app-label-secondary">
@@ -391,7 +391,7 @@ export const WarehousesSettingsPage: React.FC = () => {
           <DialogHeader>
             <DialogTitle>إضافة موقع فرعي{addingSubTo ? ` — ${addingSubTo.name}` : ""}</DialogTitle>
           </DialogHeader>
-          <form onSubmit={submitAddSub}>
+          <form onSubmit={submitAddSub} className="flex min-h-0 flex-1 flex-col">
             <DialogBody className="space-y-4 py-2">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-app-label-secondary">
@@ -448,7 +448,7 @@ export const WarehousesSettingsPage: React.FC = () => {
           <DialogHeader>
             <DialogTitle>{editing?.parent_id ? "تعديل الموقع الفرعي" : "تعديل بيانات المخزن"}</DialogTitle>
           </DialogHeader>
-          <form onSubmit={submitEdit}>
+          <form onSubmit={submitEdit} className="flex min-h-0 flex-1 flex-col">
             <DialogBody className="space-y-4 py-2">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-app-label-secondary">

@@ -386,7 +386,7 @@ const BlueprintDialog: React.FC<BlueprintDialogProps> = ({ mode, blueprint, onCl
           <DialogTitle>{mode === "create" ? "قالب جديد" : `تعديل: ${blueprint?.name ?? ""}`}</DialogTitle>
           <DialogClose />
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <DialogBody className="space-y-3">
             <div>
               <label className="mb-1 block text-xs font-semibold text-app-label-secondary">الاسم</label>
