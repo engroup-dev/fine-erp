@@ -6,10 +6,15 @@ import {
   toggleReconciliationLines,
   finishBankReconciliation,
   discardBankReconciliation,
+  addReconciliationAdjustment,
+  removeReconciliationAdjustment,
+  type AddReconciliationAdjustmentPayload,
   type CreateBankReconciliationPayload,
   type ToggleReconciliationLinesPayload,
   type BankReconciliationDetail,
 } from "../api/endpoints/bankReconciliations";
+import { apiErrorMessage } from "../api/endpoints/production";
+import { toast } from "../stores/toastStore";
 
 export function useBankReconciliations(cashAccountId?: string) {
   return useQuery({
@@ -46,6 +51,10 @@ export function useToggleReconciliationLines() {
     onSuccess: (data: BankReconciliationDetail, variables) => {
       qc.setQueryData(["bankReconciliation", variables.id], data);
     },
+    // A refused tick used to look like nothing happened.
+    onError: (err) => {
+      toast.error(apiErrorMessage(err, "تعذر تحديث حالة الحركات."));
+    },
   });
 }
 
@@ -68,5 +77,32 @@ export function useDiscardBankReconciliation() {
       qc.removeQueries({ queryKey: ["bankReconciliation", id] });
       qc.invalidateQueries({ queryKey: ["bankReconciliations"] });
     },
+  });
+}
+
+/** An adjustment posts a voucher, so voucher lists and treasury balances move too. */
+function invalidateAfterAdjustment(qc: ReturnType<typeof useQueryClient>, id: string, data: BankReconciliationDetail) {
+  qc.setQueryData(["bankReconciliation", id], data);
+  qc.invalidateQueries({ queryKey: ["bankReconciliations"] });
+  qc.invalidateQueries({ queryKey: ["treasuryVouchers"] });
+  qc.invalidateQueries({ queryKey: ["cashAccounts"] });
+  qc.invalidateQueries({ queryKey: ["treasuryOptions"] });
+}
+
+export function useAddReconciliationAdjustment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: AddReconciliationAdjustmentPayload }) =>
+      addReconciliationAdjustment(id, payload),
+    onSuccess: (data: BankReconciliationDetail, variables) => invalidateAfterAdjustment(qc, variables.id, data),
+  });
+}
+
+export function useRemoveReconciliationAdjustment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, adjustmentId }: { id: string; adjustmentId: string }) =>
+      removeReconciliationAdjustment(id, adjustmentId),
+    onSuccess: (data: BankReconciliationDetail, variables) => invalidateAfterAdjustment(qc, variables.id, data),
   });
 }

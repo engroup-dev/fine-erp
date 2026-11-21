@@ -9,6 +9,7 @@ import {
   AlertTriangle,
   Building,
   FileSpreadsheet,
+  Undo2,
 } from "lucide-react";
 import {
   DataTable,
@@ -37,13 +38,16 @@ import {
   useToggleReconciliationLines,
   useFinishBankReconciliation,
   useDiscardBankReconciliation,
+  useRemoveReconciliationAdjustment,
 } from "../../hooks/useBankReconciliations";
+import { ReconciliationAdjustmentDialog } from "../../components/treasury/ReconciliationAdjustmentDialog";
 import { useCashAccounts } from "../../hooks/useTreasury";
 import { usePermissions } from "../../hooks/usePermissions";
 import { formatNumber, formatDate, localDateIso } from "../../lib/utils/format";
 import { apiErrorMessage } from "../../api/endpoints/production";
 import { cn } from "../../lib/utils/utils";
 import type {
+  BankReconciliationAdjustment,
   BankReconciliationItem,
   BankReconciliationLine,
 } from "../../api/endpoints/bankReconciliations";
@@ -122,6 +126,12 @@ export const BankReconciliationPage: React.FC = () => {
   const toggleMutation = useToggleReconciliationLines();
   const finishMutation = useFinishBankReconciliation();
   const discardMutation = useDiscardBankReconciliation();
+  const removeAdjustmentMutation = useRemoveReconciliationAdjustment();
+
+  // Statement items (CR 9)
+  const [adjustmentDialogOpen, setAdjustmentDialogOpen] = useState(false);
+  const [removingAdjustment, setRemovingAdjustment] = useState<BankReconciliationAdjustment | null>(null);
+  const [removeAdjustmentError, setRemoveAdjustmentError] = useState<string | null>(null);
 
   // Create Dialog State
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -242,6 +252,18 @@ export const BankReconciliationPage: React.FC = () => {
         setFinishError(apiErrorMessage(err, "تعذر إنهاء التسوية المصرفية."));
       },
     });
+  };
+
+  const handleRemoveAdjustmentConfirm = () => {
+    if (!detail || !removingAdjustment) return;
+    setRemoveAdjustmentError(null);
+    removeAdjustmentMutation.mutate(
+      { id: detail.reconciliation.id, adjustmentId: removingAdjustment.id },
+      {
+        onSuccess: () => setRemovingAdjustment(null),
+        onError: (err) => setRemoveAdjustmentError(apiErrorMessage(err, "تعذر حذف البند.")),
+      },
+    );
   };
 
   const handleDiscardConfirm = () => {
@@ -673,6 +695,16 @@ export const BankReconciliationPage: React.FC = () => {
                 <>
                   <button
                     type="button"
+                    onClick={() => setAdjustmentDialogOpen(true)}
+                    className="flex items-center gap-1.5 rounded-xl border border-app-accent/40 bg-app-accent/10 px-3 py-1.5 text-xs font-bold text-app-accent hover:bg-app-accent/20 transition-colors"
+                    title="عمولات، فوائد، إيداعات أو خصومات مباشرة ظاهرة في الكشف وغير مسجلة"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>إضافة بند من الكشف</span>
+                  </button>
+
+                  <button
+                    type="button"
                     onClick={() => {
                       setDiscardError(null);
                       setDiscardConfirmOpen(true);
@@ -705,6 +737,22 @@ export const BankReconciliationPage: React.FC = () => {
               )}
             </div>
           </div>
+
+          {/* Why "إنهاء التسوية" is disabled, in plain sight rather than only in a tooltip */}
+          {isDraft && !isBalanced && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-3 text-xs text-amber-800 dark:bg-amber-950/20 dark:border-amber-900 dark:text-amber-300 flex items-start gap-2">
+              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-amber-600" />
+              <span>
+                لا يمكن إنهاء التسوية بعد: الفرق{" "}
+                <strong className="font-mono">
+                  {formatNumber(difference)} {bankCurrency}
+                </strong>{" "}
+                وليس صفراً. علّم الحركات الظاهرة في كشف البنك كمطابقة، وأضف البنود الموجودة في الكشف
+                وغير المسجلة في الدفاتر (عمولات، فوائد، إيداعات أو خصومات مباشرة) عبر «إضافة بند من
+                الكشف».
+              </span>
+            </div>
+          )}
 
           {/* Read-only warning if finished */}
           {isFinished && (
@@ -824,6 +872,61 @@ export const BankReconciliationPage: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Statement items posted from this reconciliation (CR 9) */}
+          {detail.adjustments.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-bold text-app-label-primary">بنود مضافة من الكشف</h3>
+              <div className="divide-y divide-app-separator rounded-xl border border-app-separator bg-app-bg-primary">
+                {detail.adjustments.map((adj) => (
+                  <div key={adj.id} className="flex flex-wrap items-center justify-between gap-3 px-3 py-2 text-xs">
+                    <div className="min-w-0">
+                      <div className="font-semibold text-app-label-primary">
+                        {adj.type_label}
+                        <span className="ms-2 font-normal text-app-label-tertiary">{adj.description}</span>
+                      </div>
+                      <div className="mt-0.5 text-[11px] text-app-label-secondary">
+                        <span className="font-mono">{formatDate(adj.date)}</span>
+                        <span className="mx-1.5">·</span>
+                        <span className="font-mono">{adj.voucher_number}</span>
+                        {adj.counter_account_code && (
+                          <>
+                            <span className="mx-1.5">·</span>
+                            <span>الحساب المقابل {adj.counter_account_code}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={cn(
+                          "font-mono font-bold",
+                          adj.direction === "in" ? "text-emerald-600" : "text-rose-600",
+                        )}
+                      >
+                        {adj.direction === "in" ? "+" : "-"}
+                        {formatNumber(adj.amount)} {bankCurrency}
+                      </span>
+                      {isDraft && canMutate && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRemoveAdjustmentError(null);
+                            setRemovingAdjustment(adj);
+                          }}
+                          className="flex items-center gap-1 rounded-lg border border-app-separator px-2 py-1 text-[11px] font-semibold text-app-label-secondary hover:bg-app-fill-f1"
+                          title="إلغاء سند هذا البند وحذفه من التسوية"
+                        >
+                          <Undo2 className="h-3.5 w-3.5" />
+                          تراجع
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Lines Table Section */}
           <div className="space-y-3 pt-2">
@@ -1095,6 +1198,58 @@ export const BankReconciliationPage: React.FC = () => {
         </DialogContent>
       </Dialog>
 
+      {detail && isDraft && (
+        <ReconciliationAdjustmentDialog
+          open={adjustmentDialogOpen}
+          onClose={() => setAdjustmentDialogOpen(false)}
+          reconciliationId={detail.reconciliation.id}
+          statementDate={detail.reconciliation.statement_date.slice(0, 10)}
+          currency={bankCurrency}
+        />
+      )}
+
+      <Dialog
+        open={removingAdjustment !== null}
+        onOpenChange={(o) => {
+          if (!o) setRemovingAdjustment(null);
+        }}
+      >
+        <DialogContent size="sm">
+          <DialogHeader>
+            <DialogTitle>التراجع عن بند الكشف</DialogTitle>
+            <DialogClose />
+          </DialogHeader>
+          <DialogBody className="space-y-3 text-xs text-app-label-secondary">
+            {removeAdjustmentError && (
+              <div className="rounded-xl border border-app-status-danger/30 bg-app-status-danger/10 p-3 font-semibold text-app-status-danger">
+                {removeAdjustmentError}
+              </div>
+            )}
+            <p>
+              سيُلغى السند <strong className="font-mono text-app-label-primary">{removingAdjustment?.voucher_number}</strong>{" "}
+              بقيد عكسي بنفس التاريخ، ويُحذف البند من هذه التسوية.
+            </p>
+          </DialogBody>
+          <DialogFooter>
+            <button
+              type="button"
+              onClick={() => setRemovingAdjustment(null)}
+              className="px-4 py-2 text-xs font-semibold text-app-label-secondary hover:text-app-label-primary"
+            >
+              رجوع
+            </button>
+            <button
+              type="button"
+              onClick={handleRemoveAdjustmentConfirm}
+              disabled={removeAdjustmentMutation.isPending}
+              className="px-4 py-2 text-xs font-bold text-white bg-app-status-danger rounded-xl disabled:opacity-50"
+            >
+              {removeAdjustmentMutation.isPending ? "جارٍ الإلغاء…" : "إلغاء السند وحذف البند"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Print Reconciliation Statement Dialog */}
       <PrintDialog
         open={printDialogOpen}
@@ -1184,6 +1339,29 @@ export const BankReconciliationPage: React.FC = () => {
                   </tr>
                 </PrintTable>
               </div>
+
+              {detail.adjustments.length > 0 && (
+                <div>
+                  <h3 className="font-bold text-[13px] mb-2 border-b border-black pb-1">
+                    بنود الكشف المرحّلة أثناء التسوية
+                  </h3>
+                  <PrintTable head={["التاريخ", "السند", "البند", "المبلغ"]}>
+                    {detail.adjustments.map((adj) => (
+                      <tr key={adj.id}>
+                        <Cell className="font-mono">{formatDate(adj.date)}</Cell>
+                        <Cell className="font-mono">{adj.voucher_number}</Cell>
+                        <Cell>
+                          {adj.type_label} — {adj.description}
+                        </Cell>
+                        <Cell className="font-mono text-end font-semibold">
+                          {adj.direction === "in" ? "+" : "-"}
+                          {formatNumber(adj.amount)} {bankCurrency}
+                        </Cell>
+                      </tr>
+                    ))}
+                  </PrintTable>
+                </div>
+              )}
 
               {/* Uncleared Deposits List */}
               <div>

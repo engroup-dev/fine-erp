@@ -51,6 +51,54 @@ export interface BankReconciliationLine {
   cleared: boolean;
 }
 
+export type BankReconciliationAdjustmentType =
+  | "bank_charge"
+  | "bank_interest"
+  | "direct_deposit"
+  | "direct_debit"
+  | "other_in"
+  | "other_out";
+
+/** A statement item posted from the reconciliation through a voucher (TRS-04). */
+export interface BankReconciliationAdjustment {
+  id: string;
+  type: BankReconciliationAdjustmentType;
+  type_label: string;
+  direction: "in" | "out";
+  amount: number;
+  date: string;
+  description: string;
+  voucher_id: string;
+  voucher_number: string;
+  counter_account_code: string | null;
+  client_id: string | null;
+}
+
+export const ADJUSTMENT_TYPES: {
+  value: BankReconciliationAdjustmentType;
+  label: string;
+  direction: "in" | "out";
+  /** Account the backend uses when none is picked. */
+  defaultAccountCode?: string;
+}[] = [
+  { value: "bank_charge", label: "عمولات ومصاريف بنكية", direction: "out", defaultAccountCode: "610" },
+  { value: "bank_interest", label: "فوائد بنكية", direction: "in", defaultAccountCode: "46" },
+  { value: "direct_deposit", label: "إيداع مباشر في الحساب", direction: "in" },
+  { value: "direct_debit", label: "خصم مباشر من الحساب", direction: "out" },
+  { value: "other_in", label: "تسوية أخرى (إضافة)", direction: "in" },
+  { value: "other_out", label: "تسوية أخرى (خصم)", direction: "out" },
+];
+
+export interface AddReconciliationAdjustmentPayload {
+  type: BankReconciliationAdjustmentType;
+  amount: number;
+  date?: string;
+  description?: string;
+  counter_account_code?: string;
+  client_id?: string;
+  fx_rate?: number;
+}
+
 export interface BankReconciliationItem extends BankReconciliation {
   summary?: BankReconciliationSummary;
 }
@@ -59,6 +107,7 @@ export interface BankReconciliationDetail {
   reconciliation: BankReconciliation;
   summary: BankReconciliationSummary;
   lines: BankReconciliationLine[];
+  adjustments: BankReconciliationAdjustment[];
 }
 
 export interface CreateBankReconciliationPayload {
@@ -114,6 +163,24 @@ export const bankReconciliationsApi = {
   discardReconciliation: async (id: string): Promise<void> => {
     await apiClient.delete(`/bank-reconciliations/${id}`);
   },
+
+  addAdjustment: async (
+    id: string,
+    payload: AddReconciliationAdjustmentPayload,
+  ): Promise<BankReconciliationDetail> => {
+    const res = await apiClient.post<{ data: BankReconciliationDetail }>(
+      `/bank-reconciliations/${id}/adjustments`,
+      payload,
+    );
+    return res.data.data;
+  },
+
+  removeAdjustment: async (id: string, adjustmentId: string): Promise<BankReconciliationDetail> => {
+    const res = await apiClient.delete<{ data: BankReconciliationDetail }>(
+      `/bank-reconciliations/${id}/adjustments/${adjustmentId}`,
+    );
+    return res.data.data;
+  },
 };
 
 export const getBankReconciliations = bankReconciliationsApi.getReconciliations;
@@ -122,3 +189,5 @@ export const createBankReconciliation = bankReconciliationsApi.createReconciliat
 export const toggleReconciliationLines = bankReconciliationsApi.toggleLines;
 export const finishBankReconciliation = bankReconciliationsApi.finishReconciliation;
 export const discardBankReconciliation = bankReconciliationsApi.discardReconciliation;
+export const addReconciliationAdjustment = bankReconciliationsApi.addAdjustment;
+export const removeReconciliationAdjustment = bankReconciliationsApi.removeAdjustment;
